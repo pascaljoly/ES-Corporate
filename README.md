@@ -2,6 +2,8 @@
 
 A comprehensive suite of tools for measuring and comparing energy consumption and CO2 emissions of machine learning models during inference.
 
+> **Note**: Please raise questions with the Autodesk ESG team.
+
 ## 🏗️ Project Structure
 
 This repository contains two main components:
@@ -32,12 +34,11 @@ A framework for comparing and scoring different ML models based on their energy 
 
 ```bash
 # Clone the repository
-git clone https://git.autodesk.com/saas/ai_energy_score_corporate
+git clone git@git.autodesk.com:saas/ai_energy_score_corporate.git
 cd ai_energy_score_corporate
 
 # Install dependencies
-pip install -r energy-compare/requirements.txt
-pip install codecarbon transformers torch datasets
+pip install -r requirements.txt
 ```
 
 ### Basic Usage
