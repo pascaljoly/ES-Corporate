@@ -283,15 +283,23 @@ class ModelComparator:
         model_comparisons: List[ModelComparison], 
         metrics: List[ComparisonMetric]
     ):
-        """Calculate composite scores for each model"""
+        """Calculate composite scores for each model (1-5 star scale)"""
         for model in model_comparisons:
             score = 0.0
+            total_weight = 0.0
+            
             for metric in metrics:
                 metric_score = self._calculate_metric_score(model, metric, model_comparisons)
                 weight = self.metric_weights.get(metric, 0.0)
                 score += metric_score * weight
+                total_weight += weight
             
-            model.score = score
+            # Normalize by total weight
+            if total_weight > 0:
+                score = score / total_weight
+            
+            # Ensure score is in 1-5 star range
+            model.score = max(1.0, min(5.0, score))
     
     def _calculate_metric_score(
         self, 
@@ -341,33 +349,37 @@ class ModelComparator:
         return 0.0
     
     def _normalize_lower_better(self, value: float, all_values: List[float]) -> float:
-        """Normalize values where lower is better (0-1 scale, 1 is best)"""
-        if not all_values or all(v == 0 for v in all_values):
-            return 0.0
+        """Normalize values where lower is better (1-5 star scale, 5 is best)"""
+        if not all_values:
+            return 3.0  # Default neutral score (3 stars)
+        
+        # Handle case where all values are 0 or identical
+        if all(v == 0 for v in all_values) or len(set(all_values)) == 1:
+            return 3.0  # All models get neutral score (3 stars)
         
         max_val = max(all_values)
         min_val = min(all_values)
         
-        if max_val == min_val:
-            return 1.0
-        
-        # Invert so lower values get higher scores
+        # Invert so lower values get higher scores, then scale to 1-5
         normalized = (max_val - value) / (max_val - min_val)
-        return max(0.0, min(1.0, normalized))
+        star_score = 1.0 + (normalized * 4.0)  # Scale from 0-1 to 1-5
+        return max(1.0, min(5.0, star_score))  # Ensure 1-5 star range
     
     def _normalize_higher_better(self, value: float, all_values: List[float]) -> float:
-        """Normalize values where higher is better (0-1 scale, 1 is best)"""
-        if not all_values or all(v == 0 for v in all_values):
-            return 0.0
+        """Normalize values where higher is better (1-5 star scale, 5 is best)"""
+        if not all_values:
+            return 3.0  # Default neutral score (3 stars)
+        
+        # Handle case where all values are 0 or identical
+        if all(v == 0 for v in all_values) or len(set(all_values)) == 1:
+            return 3.0  # All models get neutral score (3 stars)
         
         max_val = max(all_values)
         min_val = min(all_values)
         
-        if max_val == min_val:
-            return 1.0
-        
         normalized = (value - min_val) / (max_val - min_val)
-        return max(0.0, min(1.0, normalized))
+        star_score = 1.0 + (normalized * 4.0)  # Scale from 0-1 to 1-5
+        return max(1.0, min(5.0, star_score))  # Ensure 1-5 star range
     
     def _calculate_rankings(self, model_comparisons: List[ModelComparison]):
         """Calculate rankings based on composite scores"""
@@ -388,14 +400,16 @@ class ModelComparator:
         summary = {
             "total_models": len(model_comparisons),
             "metrics_used": [m.value for m in metrics],
+            "scoring_system": "1-5 stars (5 = best)",
             "score_statistics": {
-                "mean": statistics.mean(scores) if scores else 0,
-                "median": statistics.median(scores) if scores else 0,
-                "std": statistics.stdev(scores) if len(scores) > 1 else 0,
-                "min": min(scores) if scores else 0,
-                "max": max(scores) if scores else 0
+                "mean": round(statistics.mean(scores), 2) if scores else 0,
+                "median": round(statistics.median(scores), 2) if scores else 0,
+                "std": round(statistics.stdev(scores), 2) if len(scores) > 1 else 0,
+                "min": round(min(scores), 2) if scores else 0,
+                "max": round(max(scores), 2) if scores else 0
             },
             "winner": model_comparisons[0].model_id if model_comparisons else None,
+            "winner_stars": round(model_comparisons[0].score, 1) if model_comparisons else 0,
             "energy_range": {
                 "min_kwh": min(m.scoring_result.measurements.get('energy_per_1k_wh', 0) for m in model_comparisons),
                 "max_kwh": max(m.scoring_result.measurements.get('energy_per_1k_wh', 0) for m in model_comparisons)
@@ -407,6 +421,25 @@ class ModelComparator:
         }
         
         return summary
+    
+    @staticmethod
+    def format_star_rating(score: float) -> str:
+        """Format a score as a star rating (e.g., '4.2 ⭐')"""
+        if score is None:
+            return "N/A"
+        
+        # Round to 1 decimal place
+        rounded_score = round(score, 1)
+        
+        # Create star representation
+        full_stars = int(rounded_score)
+        has_half_star = (rounded_score - full_stars) >= 0.5
+        
+        stars = "⭐" * full_stars
+        if has_half_star:
+            stars += "⭐"  # Add one more star for half
+        
+        return f"{rounded_score} {stars}"
     
     def save_comparison(self, result: ComparisonResult, output_path: Union[str, Path]):
         """Save comparison result to JSON file"""
