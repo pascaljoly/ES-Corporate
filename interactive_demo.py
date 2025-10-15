@@ -88,7 +88,7 @@ def step_1_individual_scoring():
         
         print(f"\n✅ Scoring Complete!")
         print(f"   ⚡ Energy: {measurements['energy_per_1k_wh']:.2f} kWh/1k queries")
-        print(f"   🌍 CO2: {measurements['co2_per_1k_wh']:.2f} kg CO2/1k queries")
+        print(f"   🌍 CO2: {measurements['co2_per_1k_g']:.2f} kg CO2/1k queries")
         print(f"   🚀 Throughput: {measurements['samples_per_second']:.0f} samples/sec")
         print(f"   📦 Model Size: {metadata.get('model_size_mb', 'N/A')} MB")
         print(f"   🏗️  Architecture: {metadata.get('architecture', 'Unknown')}")
@@ -150,7 +150,7 @@ def step_2_model_comparison():
         
         print(f"  {model.rank}. {model.model_id} - {star_rating}")
         print(f"     Energy: {measurements['energy_per_1k_wh']:.1f} kWh/1k | "
-              f"CO2: {measurements['co2_per_1k_wh']:.1f} kg | "
+              f"CO2: {measurements['co2_per_1k_g']:.1f} kg | "
               f"Speed: {measurements['samples_per_second']:.0f} samples/sec")
     
     wait_for_user("Press Enter to compare computer vision models...")
@@ -188,7 +188,7 @@ def step_2_model_comparison():
         
         print(f"  {model.rank}. {model.model_id} - {star_rating}")
         print(f"     Energy: {measurements['energy_per_1k_wh']:.1f} kWh/1k | "
-              f"CO2: {measurements['co2_per_1k_wh']:.1f} kg | "
+              f"CO2: {measurements['co2_per_1k_g']:.1f} kg | "
               f"Speed: {measurements['samples_per_second']:.0f} samples/sec")
     
     return text_result, cv_result
