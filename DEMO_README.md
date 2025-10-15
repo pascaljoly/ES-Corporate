@@ -2,19 +2,60 @@
 
 ## Demo Options
 
-### Option 1: Complete Demo (2-3 minutes)
+### Option 1: Interactive Demo (Recommended for Presentations)
+```bash
+cd /path/to/EStool
+source energy-compare/venv/bin/activate
+python interactive_demo.py
+```
+**Perfect for live presentations** - pauses between each step, allows you to explain what's happening.
+
+### Option 2: Complete Demo (2-3 minutes)
 ```bash
 cd /path/to/EStool
 source energy-compare/venv/bin/activate
 python end_to_end_demo.py
 ```
+Runs automatically without pauses.
 
-### Option 2: Quick Demo (30 seconds)
+### Option 3: Quick Demo (30 seconds)
 ```bash
 cd /path/to/EStool
 source energy-compare/venv/bin/activate
 python quick_demo.py
 ```
+Fast overview for brief meetings.
+
+## Interactive Demo Flow
+
+The interactive demo walks through 5 clear steps:
+
+### **Step 1: Individual Model Scoring**
+- Score each model one by one
+- Pause between each model to explain results
+- Show energy, CO2, throughput, and model details
+
+### **Step 2: Model Comparison & Ranking**
+- Compare text generation models
+- Compare computer vision models
+- Show rankings with star ratings
+- Pause to explain the comparison process
+
+### **Step 3: Custom Scoring Weights**
+- Demonstrate energy-focused comparison
+- Demonstrate performance-focused comparison
+- Show how rankings change with different priorities
+- Explain business use cases for each approach
+
+### **Step 4: Configuration System**
+- Show current configuration settings
+- Demonstrate environment variable overrides
+- Explain how to customize without code changes
+
+### **Step 5: Business Value**
+- Summarize key business benefits
+- Show real-world use cases
+- Highlight technical advantages
 
 ## What the Demo Shows
 
