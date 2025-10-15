@@ -110,7 +110,19 @@ class ConfigLoader:
     
     def get_metric_weights(self) -> Dict[str, float]:
         """Get metric weights for scoring"""
-        return self.get("scoring.metric_weights", {})
+        # Check if HuggingFace mode is enabled
+        if self.get("scoring.huggingface_mode.enabled", False):
+            return self.get("scoring.huggingface_mode.metric_weights", {})
+        else:
+            return self.get("scoring.metric_weights", {})
+    
+    def is_huggingface_mode(self) -> bool:
+        """Check if HuggingFace mode is enabled"""
+        return self.get("scoring.huggingface_mode.enabled", False)
+    
+    def set_huggingface_mode(self, enabled: bool = True):
+        """Enable or disable HuggingFace mode"""
+        self._set_nested_value("scoring.huggingface_mode.enabled", enabled)
     
     def get_supported_hardware(self) -> Dict[str, str]:
         """Get supported hardware types"""
@@ -208,6 +220,13 @@ class ConfigLoader:
                         config_key = f"scoring.metric_weights.{metric_name}"
                     else:
                         config_key = remaining.replace('_', '.')
+                elif 'huggingface_mode' in remaining:
+                    # Handle ENERGY_SCORE_SCORING_HUGGINGFACE_MODE_ENABLED
+                    # Convert to scoring.huggingface_mode.enabled
+                    if remaining == 'scoring_huggingface_mode_enabled':
+                        config_key = 'scoring.huggingface_mode.enabled'
+                    else:
+                        config_key = remaining.replace('_', '.')
                 else:
                     config_key = remaining.replace('_', '.')
                 
@@ -285,6 +304,16 @@ def get_model_profile(model_id: str, task_type: str = None) -> Dict[str, Any]:
 def get_metric_weights() -> Dict[str, float]:
     """Get metric weights for scoring"""
     return get_config().get_metric_weights()
+
+
+def is_huggingface_mode() -> bool:
+    """Check if HuggingFace mode is enabled"""
+    return get_config().is_huggingface_mode()
+
+
+def set_huggingface_mode(enabled: bool = True):
+    """Enable or disable HuggingFace mode"""
+    get_config().set_huggingface_mode(enabled)
 
 
 def get_supported_hardware() -> Dict[str, str]:

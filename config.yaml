@@ -19,6 +19,16 @@ scoring:
     speed: 0.1
     cost_effectiveness: 0.0  # Can be enabled by setting weight > 0
   
+  # HuggingFace AI Energy Score compatible mode
+  huggingface_mode:
+    enabled: false
+    metric_weights:
+      energy_efficiency: 0.7  # Primary focus on energy
+      co2_efficiency: 0.3     # Secondary focus on CO2
+      performance: 0.0        # No performance metrics (HF doesn't include latency)
+      speed: 0.0             # No speed metrics
+      cost_effectiveness: 0.0
+  
   # Validation thresholds
   validation:
     max_coefficient_of_variation: 0.15  # Reject measurements with CV > 15%

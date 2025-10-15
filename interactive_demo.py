@@ -194,6 +194,44 @@ def step_3_custom_weights():
     print(f"   • Sustainability reporting and ESG compliance")
     print(f"   • Carbon offset planning")
     
+    wait_for_user("Press Enter to see HuggingFace AI Energy Score compatibility...")
+    
+    # HuggingFace mode demonstration
+    print_section("HuggingFace AI Energy Score Compatibility")
+    print("HuggingFace AI Energy Score focuses on energy consumption only (no performance metrics).")
+    print("We can align our scoring to match HF's approach.")
+    
+    wait_for_user("Press Enter to enable HuggingFace mode...")
+    
+    from config_loader import set_huggingface_mode, is_huggingface_mode
+    
+    # Enable HuggingFace mode
+    set_huggingface_mode(True)
+    print("✅ HuggingFace mode enabled!")
+    print("   • Energy efficiency: 70% weight")
+    print("   • CO2 efficiency: 30% weight") 
+    print("   • Performance: 0% weight (excluded)")
+    print("   • Speed: 0% weight (excluded)")
+    
+    wait_for_user("Press Enter to run HuggingFace-compatible comparison...")
+    
+    print("🔄 Running HuggingFace-compatible analysis...")
+    time.sleep(1)
+    
+    hf_result = comparator.compare_models(
+        model_specs=models,
+        n_samples=50,
+        runs=2
+    )
+    
+    print(f"\n✅ HuggingFace-Compatible Results:")
+    print(f"🏆 Winner: {hf_result.summary['winner']} ({hf_result.summary['winner_stars']} stars)")
+    print(f"📊 Focus: Pure energy efficiency (no performance bias)")
+    
+    # Disable HuggingFace mode
+    set_huggingface_mode(False)
+    print(f"\n🔄 HuggingFace mode disabled - back to standard scoring")
+    
     wait_for_user("Press Enter to see the configuration system...")
     
     return energy_result, perf_result
