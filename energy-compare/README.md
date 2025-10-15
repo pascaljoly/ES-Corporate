@@ -41,6 +41,11 @@ The framework supports a wide range of ML model types:
 - **Image Classification**: ResNet-50, EfficientNet, Vision Transformer
 - **Salient Object Detection**: U2Net, PoolNet
 
+### Supported Hardware
+- **NVIDIA GPUs**: T4, V100, A100, A100-80GB, H100, H100-SXM
+- **CPU**: CPU-only execution
+- **Apple Silicon**: M1, M2 (development)
+
 ### Supported Tasks
 - `text-generation` - Text generation models
 - `text-classification` - Text classification models  

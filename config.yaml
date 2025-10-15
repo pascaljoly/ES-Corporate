@@ -63,6 +63,22 @@ model_profiles:
       duration_seconds: 22.2
       size_mb: 1240
       architecture: "GPT-2"
+    
+    "gpt2-large":
+      energy_per_1k_wh: 12.5
+      co2_per_1k_g: 6.2
+      samples_per_second: 25
+      duration_seconds: 40.0
+      size_mb: 3080
+      architecture: "GPT-2"
+    
+    "gpt-neo-1.3B":
+      energy_per_1k_wh: 8.8
+      co2_per_1k_g: 4.4
+      samples_per_second: 35
+      duration_seconds: 28.6
+      size_mb: 2500
+      architecture: "GPT-Neo"
   
   # Text Classification Models
   text_classification:
@@ -176,6 +192,8 @@ hardware:
     "V100": "NVIDIA Tesla V100 32GB"
     "A100": "NVIDIA A100 40GB"
     "A100-80GB": "NVIDIA A100 80GB"
+    "H100": "NVIDIA H100 80GB"
+    "H100-SXM": "NVIDIA H100 SXM 80GB"
     "CPU": "CPU-only (no GPU)"
     "M1": "Apple M1 (development only)"
     "M2": "Apple M2 (development only)"
@@ -187,6 +205,8 @@ hardware:
     "V100": 0
     "A100": 0
     "A100-80GB": 0
+    "H100": 0
+    "H100-SXM": 0
     "M1": -1   # CPU for Apple Silicon
     "M2": -1
 
