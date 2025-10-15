@@ -84,26 +84,18 @@ def run_use_case(use_case_name, scenario, models):
               f"CO2: {measurements['co2_per_1k_g']:.1f} kg/1k | "
               f"Speed: {measurements['samples_per_second']:.0f} samples/sec")
     
-    # Show CO2/Energy ratio to demonstrate proportionality
-    print(f"\n💡 Key Insight - CO2 Efficiency vs Energy Efficiency:")
-    print(f"   For the same use case (same datacenter location):")
-    ratios = []
+    # Show energy efficiency focus
+    print(f"\n💡 Key Insight - Pure Energy Efficiency:")
+    print(f"   HuggingFace AI Energy Score focuses solely on energy consumption:")
     for model in result.get_rankings():
         measurements = model.scoring_result.measurements
         energy = measurements['energy_per_1k_wh']
-        co2 = measurements['co2_per_1k_g']
-        ratio = co2 / energy if energy > 0 else 0
-        ratios.append(ratio)
-        print(f"   • {model.model_id}: {ratio:.3f} kg CO2/kWh")
+        print(f"   • {model.model_id}: {energy:.2f} kWh per 1000 inferences")
     
-    if len(set([round(r, 2) for r in ratios])) == 1:
-        print(f"   ✅ All models have the same CO2/Energy ratio!")
-        print(f"   ✅ CO2 efficiency is proportional to energy efficiency")
-        print(f"   ✅ Most energy-efficient = Most CO2-efficient")
-    else:
-        print(f"   📊 CO2/Energy ratios vary slightly (regional variations)")
-    
-    print(f"   🌍 This ratio represents your datacenter's carbon intensity")
+    print(f"   ✅ Ranking based purely on energy consumption (kWh)")
+    print(f"   ✅ No CO2 emissions factor (HF doesn't use CO2 in scoring)")
+    print(f"   ✅ No performance metrics (HF doesn't include latency)")
+    print(f"   ✅ Simple, focused energy efficiency comparison")
     
     wait_for_user("Press Enter to continue...")
     
@@ -199,10 +191,11 @@ def step_3_custom_weights():
     # HuggingFace mode demonstration
     print_section("HuggingFace AI Energy Score (Default Mode)")
     print("By default, we use HuggingFace AI Energy Score approach:")
-    print("• Focus on energy consumption (70% weight)")
-    print("• Include CO2 efficiency (30% weight)")
-    print("• Exclude performance metrics (0% weight)")
-    print("This aligns with the industry standard HF energy score.")
+    print("• Pure energy focus (100% weight)")
+    print("• No CO2 emissions (HF doesn't use CO2 in scoring)")
+    print("• No performance metrics (HF doesn't include latency)")
+    print("• Only kWh per 1000 inferences")
+    print("This matches the exact HF energy score methodology.")
     
     wait_for_user("Press Enter to run HuggingFace-compatible comparison...")
     
@@ -210,8 +203,8 @@ def step_3_custom_weights():
     
     # Show current mode
     print(f"✅ Current mode: {'HuggingFace' if is_huggingface_mode() else 'Comprehensive'}")
-    print("   • Energy efficiency: 70% weight")
-    print("   • CO2 efficiency: 30% weight") 
+    print("   • Energy efficiency: 100% weight (pure energy focus)")
+    print("   • CO2 efficiency: 0% weight (excluded - HF doesn't use CO2)") 
     print("   • Performance: 0% weight (excluded)")
     print("   • Speed: 0% weight (excluded)")
     
@@ -228,10 +221,11 @@ def step_3_custom_weights():
     
     print(f"\n✅ HuggingFace-Compatible Results:")
     print(f"🏆 Winner: {hf_result.summary['winner']} ({hf_result.summary['winner_stars']} stars)")
-    print(f"📊 Focus: Pure energy efficiency (no performance bias)")
+    print(f"📊 Focus: Pure energy efficiency (kWh per 1000 inferences only)")
+    print(f"📊 Ranking based solely on energy consumption (no CO2, no performance)")
     
     # Show how to switch to comprehensive mode
-    print(f"\n💡 To use comprehensive scoring (with performance metrics):")
+    print(f"\n💡 To use comprehensive scoring (with CO2 and performance metrics):")
     print(f"   • Set ENERGY_SCORE_SCORING_HUGGINGFACE_MODE_ENABLED=false")
     print(f"   • Or call set_huggingface_mode(False) in code")
     print(f"   • This enables: Energy(40%) + CO2(30%) + Performance(20%) + Speed(10%)")

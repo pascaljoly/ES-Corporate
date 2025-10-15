@@ -23,8 +23,8 @@ scoring:
   huggingface_mode:
     enabled: true
     metric_weights:
-      energy_efficiency: 0.7  # Primary focus on energy
-      co2_efficiency: 0.3     # Secondary focus on CO2
+      energy_efficiency: 1.0  # Pure energy focus (HF standard)
+      co2_efficiency: 0.0     # No CO2 emissions (HF doesn't use CO2)
       performance: 0.0        # No performance metrics (HF doesn't include latency)
       speed: 0.0             # No speed metrics
       cost_effectiveness: 0.0
