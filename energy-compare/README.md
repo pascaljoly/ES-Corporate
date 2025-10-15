@@ -5,10 +5,12 @@ A comprehensive framework for comparing machine learning models based on their e
 ## 🎯 Overview
 
 The Energy Compare framework provides tools to:
-- **Score individual models** using the `ModelEnergyScorer`
+- **Score individual models** using the `ModelEnergyScorer` (with configuration-based profiles)
 - **Compare multiple models** using the `ModelComparator`
 - **Analyze energy efficiency** across different metrics
 - **Generate detailed reports** with rankings and statistics
+
+> **Note**: The current implementation uses configuration-based model profiles for scoring. For real energy measurement, use the `ml_energy_score.measure.measure_model_energy()` function which accepts actual datasets and performs live energy measurement.
 
 ## 🏗️ Architecture
 
@@ -24,6 +26,62 @@ The Energy Compare framework provides tools to:
 - `ModelComparator` - Compares multiple models based on various metrics
 - `ComparisonResult` - Contains comparison results with rankings and statistics
 - `ComparisonMetric` - Enum of available comparison metrics
+
+## 🎯 Supported Model Types
+
+The framework supports a wide range of ML model types:
+
+### Text Models
+- **Text Generation**: GPT-2, DistilGPT-2, GPT-2 Medium
+- **Text Classification**: BERT, DistilBERT, RoBERTa
+- **Sentiment Analysis**: Various transformer models
+
+### Computer Vision Models
+- **Object Detection**: YOLOv8 (nano, small, medium), BiRefNet
+- **Image Classification**: ResNet-50, EfficientNet, Vision Transformer
+- **Salient Object Detection**: U2Net, PoolNet
+
+### Supported Tasks
+- `text-generation` - Text generation models
+- `text-classification` - Text classification models  
+- `image-classification` - Image classification models
+- `object_detection` - Object detection models
+- `sentiment-analysis` - Sentiment analysis models
+- `question-answering` - Question answering models
+- `summarization` - Text summarization models
+- `translation` - Machine translation models
+
+## 🔧 Scoring Approaches
+
+The framework supports two approaches for model scoring:
+
+### 1. Configuration-Based Scoring (Default)
+- Uses predefined model profiles from `config.yaml`
+- Fast and consistent for comparison purposes
+- No actual energy measurement required
+- Perfect for model selection and comparison workflows
+
+### 2. Live Energy Measurement
+- Uses `ml_energy_score.measure.measure_model_energy()` function
+- Performs actual energy measurement with CodeCarbon
+- Requires real datasets and model execution
+- Suitable for production energy monitoring
+
+```python
+# Configuration-based scoring (fast, for comparison)
+from scorer.config_aware_scorer import ConfigAwareModelScorer
+scorer = ConfigAwareModelScorer()
+result = scorer.score("distilgpt2", "text-generation")
+
+# Live energy measurement (real measurement)
+from ml_energy_score.measure import measure_model_energy
+result = measure_model_energy(
+    model_path="distilgpt2",
+    task="text-generation", 
+    dataset=your_dataset,  # Real dataset required
+    hardware="CPU"
+)
+```
 
 ## 🚀 Quick Start
 
@@ -48,9 +106,9 @@ comparator = ModelComparator()
 
 # Define models to compare
 model_specs = [
-    ("gpt2", "text_generation"),
-    ("gpt2-medium", "text_generation"),
-    ("distilgpt2", "text_generation")
+    ("gpt2", "text-generation"),
+    ("gpt2-medium", "text-generation"),
+    ("distilgpt2", "text-generation")
 ]
 
 # Compare models
@@ -68,6 +126,25 @@ print(f"Score: {winner.score:.3f}")
 # View rankings
 for model in result.get_rankings():
     print(f"Rank {model.rank}: {model.model_id} (Score: {model.score:.3f})")
+```
+
+### Computer Vision Example
+
+```python
+# Compare computer vision models
+cv_model_specs = [
+    ("YOLOv8n", "object_detection"),
+    ("YOLOv8s", "object_detection"),
+    ("BiRefNet", "object_detection")
+]
+
+cv_result = comparator.compare_models(
+    model_specs=cv_model_specs,
+    n_samples=50,
+    runs=2
+)
+
+print(f"CV Winner: {cv_result.get_winner().model_id}")
 ```
 
 ## 📊 Comparison Metrics
