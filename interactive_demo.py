@@ -197,23 +197,25 @@ def step_3_custom_weights():
     wait_for_user("Press Enter to see HuggingFace AI Energy Score compatibility...")
     
     # HuggingFace mode demonstration
-    print_section("HuggingFace AI Energy Score Compatibility")
-    print("HuggingFace AI Energy Score focuses on energy consumption only (no performance metrics).")
-    print("We can align our scoring to match HF's approach.")
+    print_section("HuggingFace AI Energy Score (Default Mode)")
+    print("By default, we use HuggingFace AI Energy Score approach:")
+    print("• Focus on energy consumption (70% weight)")
+    print("• Include CO2 efficiency (30% weight)")
+    print("• Exclude performance metrics (0% weight)")
+    print("This aligns with the industry standard HF energy score.")
     
-    wait_for_user("Press Enter to enable HuggingFace mode...")
+    wait_for_user("Press Enter to run HuggingFace-compatible comparison...")
     
     from config_loader import set_huggingface_mode, is_huggingface_mode
     
-    # Enable HuggingFace mode
-    set_huggingface_mode(True)
-    print("✅ HuggingFace mode enabled!")
+    # Show current mode
+    print(f"✅ Current mode: {'HuggingFace' if is_huggingface_mode() else 'Comprehensive'}")
     print("   • Energy efficiency: 70% weight")
     print("   • CO2 efficiency: 30% weight") 
     print("   • Performance: 0% weight (excluded)")
     print("   • Speed: 0% weight (excluded)")
     
-    wait_for_user("Press Enter to run HuggingFace-compatible comparison...")
+    wait_for_user("Press Enter to run comparison...")
     
     print("🔄 Running HuggingFace-compatible analysis...")
     time.sleep(1)
@@ -228,9 +230,11 @@ def step_3_custom_weights():
     print(f"🏆 Winner: {hf_result.summary['winner']} ({hf_result.summary['winner_stars']} stars)")
     print(f"📊 Focus: Pure energy efficiency (no performance bias)")
     
-    # Disable HuggingFace mode
-    set_huggingface_mode(False)
-    print(f"\n🔄 HuggingFace mode disabled - back to standard scoring")
+    # Show how to switch to comprehensive mode
+    print(f"\n💡 To use comprehensive scoring (with performance metrics):")
+    print(f"   • Set ENERGY_SCORE_SCORING_HUGGINGFACE_MODE_ENABLED=false")
+    print(f"   • Or call set_huggingface_mode(False) in code")
+    print(f"   • This enables: Energy(40%) + CO2(30%) + Performance(20%) + Speed(10%)")
     
     wait_for_user("Press Enter to see the configuration system...")
     
@@ -250,6 +254,7 @@ def step_4_configuration_system():
     print(f"📊 Supported Tasks: {len(config.get_supported_tasks())} types")
     print(f"🖥️  Supported Hardware: {len(config.get_supported_hardware())} types")
     print(f"⚖️  Default Metric Weights: {config.get_metric_weights()}")
+    print(f"🤗 HuggingFace Mode: {'Enabled (Default)' if config.is_huggingface_mode() else 'Disabled'}")
     print(f"⭐ Star Rating Range: {config.get('scoring.star_rating.min_stars')} - {config.get('scoring.star_rating.max_stars')}")
     
     # Show model profiles

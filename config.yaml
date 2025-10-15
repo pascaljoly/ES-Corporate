@@ -21,7 +21,7 @@ scoring:
   
   # HuggingFace AI Energy Score compatible mode
   huggingface_mode:
-    enabled: false
+    enabled: true
     metric_weights:
       energy_efficiency: 0.7  # Primary focus on energy
       co2_efficiency: 0.3     # Secondary focus on CO2
