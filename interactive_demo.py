@@ -72,7 +72,6 @@ def run_use_case(use_case_name, scenario, models):
     
     print(f"\n✅ {use_case_name} Analysis Complete!")
     print(f"🏆 Winner: {result.summary['winner']} ({result.summary['winner_stars']} stars)")
-    print(f"📈 Score Range: {result.summary['score_statistics']['min']:.1f} - {result.summary['score_statistics']['max']:.1f} stars")
     
     print(f"\n📋 {use_case_name} Rankings:")
     for model in result.get_rankings():
@@ -83,19 +82,6 @@ def run_use_case(use_case_name, scenario, models):
         print(f"     Energy: {measurements['energy_per_1k_wh']:.1f} kWh/1k | "
               f"CO2: {measurements['co2_per_1k_g']:.1f} kg/1k | "
               f"Speed: {measurements['samples_per_second']:.0f} samples/sec")
-    
-    # Show energy efficiency focus
-    print(f"\n💡 Key Insight - Pure Energy Efficiency:")
-    print(f"   HuggingFace AI Energy Score focuses solely on energy consumption:")
-    for model in result.get_rankings():
-        measurements = model.scoring_result.measurements
-        energy = measurements['energy_per_1k_wh']
-        print(f"   • {model.model_id}: {energy:.2f} kWh per 1000 inferences")
-    
-    print(f"   ✅ Ranking based purely on energy consumption (kWh)")
-    print(f"   ✅ No CO2 emissions factor (HF doesn't use CO2 in scoring)")
-    print(f"   ✅ No performance metrics (HF doesn't include latency)")
-    print(f"   ✅ Simple, focused energy efficiency comparison")
     
     wait_for_user("Press Enter to continue...")
     
@@ -153,7 +139,6 @@ def step_3_custom_weights():
     
     # Performance-focused comparison
     print_section("Performance-Focused Comparison")
-    print("Scenario: A company prioritizing model performance and speed")
     print("Weights: 40% Energy, 30% CO2, 30% Performance")
     
     wait_for_user("Press Enter to run performance-focused comparison...")
@@ -178,35 +163,17 @@ def step_3_custom_weights():
     print(f"\n✅ Performance-Focused Results:")
     print(f"🏆 Winner: {perf_result.summary['winner']} ({perf_result.summary['winner_stars']} stars)")
     
-    print(f"\n💡 Key Insight: Rankings can change based on business priorities!")
-    print(f"\n🌍 When CO2 Efficiency Matters Most:")
-    print(f"   • Cross-region comparisons (different datacenter locations)")
-    print(f"   • Multi-cloud deployments (AWS vs Azure vs GCP)")
-    print(f"   • Green energy vs fossil fuel regions")
-    print(f"   • Sustainability reporting and ESG compliance")
-    print(f"   • Carbon offset planning")
-    
     wait_for_user("Press Enter to see HuggingFace AI Energy Score compatibility...")
     
     # HuggingFace mode demonstration
     print_section("HuggingFace AI Energy Score (Default Mode)")
-    print("By default, we use HuggingFace AI Energy Score approach:")
-    print("• Pure energy focus (100% weight)")
-    print("• No CO2 emissions (HF doesn't use CO2 in scoring)")
-    print("• No performance metrics (HF doesn't include latency)")
-    print("• Only kWh per 1000 inferences")
-    print("This matches the exact HF energy score methodology.")
+    print("Pure energy focus (100% weight)")
     
     wait_for_user("Press Enter to run HuggingFace-compatible comparison...")
     
     from config_loader import set_huggingface_mode, is_huggingface_mode
     
-    # Show current mode
     print(f"✅ Current mode: {'HuggingFace' if is_huggingface_mode() else 'Comprehensive'}")
-    print("   • Energy efficiency: 100% weight (pure energy focus)")
-    print("   • CO2 efficiency: 0% weight (excluded - HF doesn't use CO2)") 
-    print("   • Performance: 0% weight (excluded)")
-    print("   • Speed: 0% weight (excluded)")
     
     wait_for_user("Press Enter to run comparison...")
     
@@ -221,14 +188,6 @@ def step_3_custom_weights():
     
     print(f"\n✅ HuggingFace-Compatible Results:")
     print(f"🏆 Winner: {hf_result.summary['winner']} ({hf_result.summary['winner_stars']} stars)")
-    print(f"📊 Focus: Pure energy efficiency (kWh per 1000 inferences only)")
-    print(f"📊 Ranking based solely on energy consumption (no CO2, no performance)")
-    
-    # Show how to switch to comprehensive mode
-    print(f"\n💡 To use comprehensive scoring (with CO2 and performance metrics):")
-    print(f"   • Set ENERGY_SCORE_SCORING_HUGGINGFACE_MODE_ENABLED=false")
-    print(f"   • Or call set_huggingface_mode(False) in code")
-    print(f"   • This enables: Energy(40%) + CO2(30%) + Performance(20%) + Speed(10%)")
     
     wait_for_user("Press Enter to see the configuration system...")
     
@@ -249,7 +208,6 @@ def step_4_configuration_system():
     print(f"🖥️  Supported Hardware: {len(config.get_supported_hardware())} types")
     print(f"⚖️  Default Metric Weights: {config.get_metric_weights()}")
     print(f"🤗 HuggingFace Mode: {'Enabled (Default)' if config.is_huggingface_mode() else 'Disabled'}")
-    print(f"⭐ Star Rating Range: {config.get('scoring.star_rating.min_stars')} - {config.get('scoring.star_rating.max_stars')}")
     
     # Show model profiles
     print(f"\n🤖 Model Profiles Available:")
@@ -257,24 +215,6 @@ def step_4_configuration_system():
     cv_models = config.get("model_profiles.computer_vision", {})
     print(f"   Text Generation: {len(text_models)} models")
     print(f"   Computer Vision: {len(cv_models)} models")
-    
-    wait_for_user("Press Enter to see environment variable override demo...")
-    
-    # Demonstrate environment variable override
-    print_section("Environment Variable Override")
-    print("You can override any configuration setting using environment variables.")
-    print(f"Current energy efficiency weight: {config.get('scoring.metric_weights.energy_efficiency')}")
-    
-    wait_for_user("Press Enter to simulate an override...")
-    
-    # Simulate override
-    config._set_nested_value("scoring.metric_weights.energy_efficiency", 0.7)
-    config._set_nested_value("scoring.metric_weights.co2_efficiency", 0.3)
-    config._set_nested_value("scoring.metric_weights.performance", 0.0)
-    config._set_nested_value("scoring.metric_weights.speed", 0.0)
-    
-    print(f"After override: {config.get_metric_weights()}")
-    print("✅ Configuration updated without code changes!")
     
     wait_for_user("Press Enter to see business value summary...")
     
@@ -313,8 +253,6 @@ def step_5_business_value():
     print("🔌 Extensible: Easy to add new models and metrics")
     print("✅ Validated: Automatic configuration validation prevents errors")
     
-    wait_for_user("Press Enter for the final summary...")
-    
     return True
 
 
@@ -323,21 +261,15 @@ def final_summary():
     print_header("Demo Summary")
     
     print("✅ Successfully demonstrated:")
-    print("  • Individual model energy scoring")
+    print("  • Use case-based model selection")
     print("  • Multi-model comparison and ranking")
     print("  • Custom scoring weights for different priorities")
+    print("  • HuggingFace AI Energy Score compatibility")
     print("  • Configuration system flexibility")
-    print("  • Business value and use cases")
     
     print(f"\n🎉 The Energy Score Tool is ready for production use!")
     print(f"   All models can be scored, compared, and ranked automatically.")
     print(f"   Configuration system enables easy customization without code changes.")
-    
-    print(f"\n📞 Next Steps:")
-    print(f"   • Integrate with your existing ML workflows")
-    print(f"   • Customize configuration for your specific needs")
-    print(f"   • Start measuring energy consumption of your models")
-    print(f"   • Make data-driven decisions about model selection")
     
     print(f"\nThank you for watching the Energy Score Tool demo! 🚀")
 
