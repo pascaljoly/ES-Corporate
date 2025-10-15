@@ -43,155 +43,52 @@ def print_section(title):
     print("-" * 40)
 
 
-def step_1_individual_scoring():
-    """Step 1: Score individual models one by one"""
-    print_header("Step 1: Individual Model Energy Scoring")
+def run_use_case(use_case_name, scenario, models):
+    """Run a specific use case with given models"""
+    print_header(f"Use Case: {use_case_name}")
     
-    print("Let's start by scoring individual models to see their energy consumption.")
-    wait_for_user("Ready to score the first model?")
-    
-    # Create scorer
-    scorer = ConfigAwareModelScorer()
-    
-    # Models to score
-    models_to_score = [
-        ("distilgpt2", "text-generation", "Small, efficient text generator"),
-        ("gpt2", "text-generation", "Standard GPT-2 model"),
-        ("gpt2-medium", "text-generation", "Larger GPT-2 model"),
-        ("YOLOv8n", "object_detection", "Lightweight object detection"),
-        ("BiRefNet", "object_detection", "Advanced object detection")
-    ]
-    
-    results = []
-    
-    for i, (model_id, task, description) in enumerate(models_to_score, 1):
-        print_section(f"Scoring Model {i}: {model_id}")
-        print(f"Description: {description}")
-        print(f"Task: {task}")
-        
-        wait_for_user(f"Press Enter to score {model_id}...")
-        
-        # Score the model
-        print("⚡ Measuring energy consumption...")
-        time.sleep(1)  # Simulate measurement time
-        
-        result = scorer.score(
-            model=model_id,
-            task=task,
-            n_samples=50,
-            runs=2
-        )
-        
-        # Display results
-        measurements = result.measurements
-        metadata = result.metadata
-        
-        print(f"\n✅ Scoring Complete!")
-        print(f"   ⚡ Energy: {measurements['energy_per_1k_wh']:.2f} kWh/1k queries")
-        print(f"   🌍 CO2: {measurements['co2_per_1k_g']:.2f} kg CO2/1k queries")
-        print(f"   🚀 Throughput: {measurements['samples_per_second']:.0f} samples/sec")
-        print(f"   📦 Model Size: {metadata.get('model_size_mb', 'N/A')} MB")
-        print(f"   🏗️  Architecture: {metadata.get('architecture', 'Unknown')}")
-        
-        results.append((model_id, result, description))
-        
-        if i < len(models_to_score):
-            wait_for_user("Press Enter to score the next model...")
-    
-    print(f"\n🎉 All {len(models_to_score)} models scored successfully!")
-    wait_for_user("Ready to compare these models?")
-    
-    return results
-
-
-def step_2_model_comparison():
-    """Step 2: Compare models and show rankings"""
-    print_header("Step 2: Model Comparison & Ranking")
-    
-    print("Now let's compare these models and see which one is most energy-efficient.")
-    wait_for_user("Ready to start the comparison?")
+    print(f"Scenario: {scenario}")
+    print(f"You have {len(models)} options to compare based on energy efficiency.")
+    wait_for_user(f"Ready to analyze {use_case_name.lower()} models?")
     
     # Create scorer and comparator
     scorer = ConfigAwareModelScorer()
     comparator = ModelComparator(scorer=scorer)
     
-    # Compare text generation models
-    print_section("Comparing Text Generation Models")
-    
-    text_models = [
-        ("distilgpt2", "text-generation"),
-        ("gpt2", "text-generation"),
-        ("gpt2-medium", "text-generation")
-    ]
-    
-    print("Models to compare:")
-    for model_id, task in text_models:
-        print(f"  • {model_id} ({task})")
+    print_section(f"{use_case_name} Models to Compare")
+    for model_id, task, description in models:
+        print(f"  • {model_id}: {description}")
     
     wait_for_user("Press Enter to run the comparison...")
     
-    print("🔄 Running comparison analysis...")
-    time.sleep(2)  # Simulate comparison time
+    print(f"🔄 Analyzing {use_case_name.lower()} models...")
+    time.sleep(2)  # Simulate analysis time
     
-    text_result = comparator.compare_models(
-        model_specs=text_models,
+    result = comparator.compare_models(
+        model_specs=[(model_id, task) for model_id, task, _ in models],
         n_samples=50,
         runs=2
     )
     
-    print(f"\n✅ Comparison Complete!")
-    print(f"🏆 Winner: {text_result.summary['winner']} ({text_result.summary['winner_stars']} stars)")
-    print(f"📈 Score Range: {text_result.summary['score_statistics']['min']:.1f} - {text_result.summary['score_statistics']['max']:.1f} stars")
+    print(f"\n✅ {use_case_name} Analysis Complete!")
+    print(f"🏆 Winner: {result.summary['winner']} ({result.summary['winner_stars']} stars)")
+    print(f"📈 Score Range: {result.summary['score_statistics']['min']:.1f} - {result.summary['score_statistics']['max']:.1f} stars")
     
-    print(f"\n📋 Rankings:")
-    for model in text_result.get_rankings():
+    print(f"\n📋 {use_case_name} Rankings:")
+    for model in result.get_rankings():
         star_rating = ModelComparator.format_star_rating(model.score)
         measurements = model.scoring_result.measurements
         
         print(f"  {model.rank}. {model.model_id} - {star_rating}")
         print(f"     Energy: {measurements['energy_per_1k_wh']:.1f} kWh/1k | "
-              f"CO2: {measurements['co2_per_1k_g']:.1f} kg | "
+              f"CO2: {measurements['co2_per_1k_g']:.1f} kg/1k | "
               f"Speed: {measurements['samples_per_second']:.0f} samples/sec")
     
-    wait_for_user("Press Enter to compare computer vision models...")
+    wait_for_user("Press Enter to continue...")
     
-    # Compare computer vision models
-    print_section("Comparing Computer Vision Models")
-    
-    cv_models = [
-        ("YOLOv8n", "object_detection"),
-        ("BiRefNet", "object_detection")
-    ]
-    
-    print("Models to compare:")
-    for model_id, task in cv_models:
-        print(f"  • {model_id} ({task})")
-    
-    wait_for_user("Press Enter to run the CV comparison...")
-    
-    print("🔄 Running computer vision comparison...")
-    time.sleep(2)
-    
-    cv_result = comparator.compare_models(
-        model_specs=cv_models,
-        n_samples=50,
-        runs=2
-    )
-    
-    print(f"\n✅ CV Comparison Complete!")
-    print(f"🏆 Winner: {cv_result.summary['winner']} ({cv_result.summary['winner_stars']} stars)")
-    
-    print(f"\n📋 Rankings:")
-    for model in cv_result.get_rankings():
-        star_rating = ModelComparator.format_star_rating(model.score)
-        measurements = model.scoring_result.measurements
-        
-        print(f"  {model.rank}. {model.model_id} - {star_rating}")
-        print(f"     Energy: {measurements['energy_per_1k_wh']:.1f} kWh/1k | "
-              f"CO2: {measurements['co2_per_1k_g']:.1f} kg | "
-              f"Speed: {measurements['samples_per_second']:.0f} samples/sec")
-    
-    return text_result, cv_result
+    return result
+
+
 
 
 def step_3_custom_weights():
@@ -380,19 +277,58 @@ def final_summary():
 
 
 def main():
-    """Run the interactive demo"""
+    """Run the interactive demo with default use cases"""
+    run_demo_with_use_cases()
+
+
+def get_default_use_cases():
+    """Get default use cases for the demo"""
+    return [
+        {
+            "name": "Text Generation",
+            "scenario": "Your company needs to choose a text generation model for customer support chatbots.",
+            "models": [
+                ("distilgpt2", "text-generation", "Small, efficient text generator"),
+                ("gpt2", "text-generation", "Standard GPT-2 model"),
+                ("gpt2-medium", "text-generation", "Larger GPT-2 model")
+            ]
+        },
+        {
+            "name": "Computer Vision",
+            "scenario": "Your company needs to choose an object detection model for security cameras.",
+            "models": [
+                ("YOLOv8n", "object_detection", "Lightweight, fast object detection"),
+                ("BiRefNet", "object_detection", "Advanced, accurate object detection")
+            ]
+        }
+    ]
+
+
+def run_demo_with_use_cases(use_cases=None):
+    """Run demo with custom use cases"""
+    if use_cases is None:
+        use_cases = get_default_use_cases()
+    
     print_header("Energy Score Tool - Interactive Demo")
-    print("This demo will walk you through each step of the energy scoring process.")
+    print("This demo shows real-world use cases for model selection.")
     print("Press Enter after each step to continue.")
     
     try:
         wait_for_user("Ready to start? Press Enter to begin...")
         
-        # Step 1: Individual scoring
-        scoring_results = step_1_individual_scoring()
+        results = []
         
-        # Step 2: Model comparison
-        text_result, cv_result = step_2_model_comparison()
+        # Run each use case
+        for i, use_case in enumerate(use_cases, 1):
+            result = run_use_case(
+                use_case["name"],
+                use_case["scenario"], 
+                use_case["models"]
+            )
+            results.append((use_case["name"], result))
+            
+            if i < len(use_cases):
+                wait_for_user("Press Enter to see the next use case...")
         
         # Step 3: Custom weights
         energy_result, perf_result = step_3_custom_weights()
@@ -415,4 +351,19 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # You can customize use cases here or pass them as parameters
+    custom_use_cases = None  # Use default use cases
+    
+    # Example of custom use cases:
+    # custom_use_cases = [
+    #     {
+    #         "name": "Sentiment Analysis",
+    #         "scenario": "Choose a model for analyzing customer feedback sentiment.",
+    #         "models": [
+    #             ("distilbert-base-uncased", "text-classification", "Fast sentiment analysis"),
+    #             ("roberta-base", "text-classification", "Accurate sentiment analysis")
+    #         ]
+    #     }
+    # ]
+    
+    run_demo_with_use_cases(custom_use_cases)
