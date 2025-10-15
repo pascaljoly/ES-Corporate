@@ -84,6 +84,27 @@ def run_use_case(use_case_name, scenario, models):
               f"CO2: {measurements['co2_per_1k_g']:.1f} kg/1k | "
               f"Speed: {measurements['samples_per_second']:.0f} samples/sec")
     
+    # Show CO2/Energy ratio to demonstrate proportionality
+    print(f"\n💡 Key Insight - CO2 Efficiency vs Energy Efficiency:")
+    print(f"   For the same use case (same datacenter location):")
+    ratios = []
+    for model in result.get_rankings():
+        measurements = model.scoring_result.measurements
+        energy = measurements['energy_per_1k_wh']
+        co2 = measurements['co2_per_1k_g']
+        ratio = co2 / energy if energy > 0 else 0
+        ratios.append(ratio)
+        print(f"   • {model.model_id}: {ratio:.3f} kg CO2/kWh")
+    
+    if len(set([round(r, 2) for r in ratios])) == 1:
+        print(f"   ✅ All models have the same CO2/Energy ratio!")
+        print(f"   ✅ CO2 efficiency is proportional to energy efficiency")
+        print(f"   ✅ Most energy-efficient = Most CO2-efficient")
+    else:
+        print(f"   📊 CO2/Energy ratios vary slightly (regional variations)")
+    
+    print(f"   🌍 This ratio represents your datacenter's carbon intensity")
+    
     wait_for_user("Press Enter to continue...")
     
     return result
@@ -112,6 +133,7 @@ def step_3_custom_weights():
     print_section("Energy-Focused Comparison")
     print("Scenario: A company prioritizing energy efficiency and sustainability")
     print("Weights: 60% Energy Efficiency, 40% CO2 Efficiency")
+    print("Note: For same use case, energy and CO2 efficiency are proportional!")
     
     wait_for_user("Press Enter to run energy-focused comparison...")
     
@@ -165,6 +187,13 @@ def step_3_custom_weights():
     print(f"🏆 Winner: {perf_result.summary['winner']} ({perf_result.summary['winner_stars']} stars)")
     
     print(f"\n💡 Key Insight: Rankings can change based on business priorities!")
+    print(f"\n🌍 When CO2 Efficiency Matters Most:")
+    print(f"   • Cross-region comparisons (different datacenter locations)")
+    print(f"   • Multi-cloud deployments (AWS vs Azure vs GCP)")
+    print(f"   • Green energy vs fossil fuel regions")
+    print(f"   • Sustainability reporting and ESG compliance")
+    print(f"   • Carbon offset planning")
+    
     wait_for_user("Press Enter to see the configuration system...")
     
     return energy_result, perf_result
