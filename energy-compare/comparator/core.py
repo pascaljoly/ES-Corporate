@@ -14,10 +14,20 @@ import json
 from pathlib import Path
 import statistics
 from enum import Enum
+import sys
 
+# Add project root to path to import config_loader
+project_root = Path(__file__).parent.parent.parent
+if str(project_root) not in sys.path:
+    sys.path.append(str(project_root))
+
+from config_loader import get_config
 from scorer.core import ScoringResult, ModelEnergyScorer
 
 logger = logging.getLogger(__name__)
+
+# Get configuration
+config = get_config()
 
 
 class ComparisonMetric(Enum):
@@ -111,12 +121,14 @@ class ModelComparator:
         self.scorer = scorer or ModelEnergyScorer()
         self.logger = logging.getLogger(__name__)
         
-        # Default comparison weights
+        # Get default comparison weights from configuration
+        config_weights = config.get_metric_weights()
         self.metric_weights = {
-            ComparisonMetric.ENERGY_EFFICIENCY: 0.4,
-            ComparisonMetric.CO2_EFFICIENCY: 0.3,
-            ComparisonMetric.PERFORMANCE: 0.2,
-            ComparisonMetric.SPEED: 0.1
+            ComparisonMetric.ENERGY_EFFICIENCY: config_weights.get('energy_efficiency', 0.4),
+            ComparisonMetric.CO2_EFFICIENCY: config_weights.get('co2_efficiency', 0.3),
+            ComparisonMetric.PERFORMANCE: config_weights.get('performance', 0.2),
+            ComparisonMetric.SPEED: config_weights.get('speed', 0.1),
+            ComparisonMetric.COST_EFFECTIVENESS: config_weights.get('cost_effectiveness', 0.0)
         }
     
     def compare_models(
@@ -140,7 +152,7 @@ class ModelComparator:
         Returns:
             ComparisonResult with rankings and scores
         """
-        self.logger.info(f"Starting comparison of {len(model_specs)} models")
+        self.logger.debug(f"Starting comparison of {len(model_specs)} models")
         
         # Validate inputs
         self._validate_model_specs(model_specs)
@@ -157,7 +169,7 @@ class ModelComparator:
         # Score all models
         model_comparisons = []
         for model_id, task in model_specs:
-            self.logger.info(f"Scoring model: {model_id}")
+            self.logger.debug(f"Scoring model: {model_id}")
             try:
                 scoring_result = self.scorer.score(
                     model=model_id,
@@ -191,7 +203,7 @@ class ModelComparator:
             summary=summary
         )
         
-        self.logger.info("Comparison complete")
+        self.logger.debug("Comparison complete")
         return result
     
     def compare_models_from_results(
@@ -211,7 +223,7 @@ class ModelComparator:
         Returns:
             ComparisonResult with rankings and scores
         """
-        self.logger.info(f"Comparing {len(scoring_results)} pre-computed results")
+        self.logger.debug(f"Comparing {len(scoring_results)} pre-computed results")
         
         if not scoring_results:
             raise ComparisonError("No scoring results provided")
@@ -255,7 +267,7 @@ class ModelComparator:
             summary=summary
         )
         
-        self.logger.info("Comparison from results complete")
+        self.logger.debug("Comparison from results complete")
         return result
     
     def _validate_model_specs(self, model_specs: List[Tuple[str, str]]):
@@ -298,8 +310,10 @@ class ModelComparator:
             if total_weight > 0:
                 score = score / total_weight
             
-            # Ensure score is in 1-5 star range
-            model.score = max(1.0, min(5.0, score))
+            # Ensure score is in configured star range
+            min_stars = config.get("scoring.star_rating.min_stars", 1.0)
+            max_stars = config.get("scoring.star_rating.max_stars", 5.0)
+            model.score = max(min_stars, min(max_stars, score))
     
     def _calculate_metric_score(
         self, 
@@ -349,37 +363,47 @@ class ModelComparator:
         return 0.0
     
     def _normalize_lower_better(self, value: float, all_values: List[float]) -> float:
-        """Normalize values where lower is better (1-5 star scale, 5 is best)"""
+        """Normalize values where lower is better (configurable star scale)"""
+        min_stars = config.get("scoring.star_rating.min_stars", 1.0)
+        max_stars = config.get("scoring.star_rating.max_stars", 5.0)
+        default_score = config.get("scoring.star_rating.default_score", 3.0)
+        
         if not all_values:
-            return 3.0  # Default neutral score (3 stars)
+            return default_score
         
         # Handle case where all values are 0 or identical
         if all(v == 0 for v in all_values) or len(set(all_values)) == 1:
-            return 3.0  # All models get neutral score (3 stars)
+            return default_score
         
         max_val = max(all_values)
         min_val = min(all_values)
         
-        # Invert so lower values get higher scores, then scale to 1-5
+        # Invert so lower values get higher scores, then scale to star range
         normalized = (max_val - value) / (max_val - min_val)
-        star_score = 1.0 + (normalized * 4.0)  # Scale from 0-1 to 1-5
-        return max(1.0, min(5.0, star_score))  # Ensure 1-5 star range
+        star_range = max_stars - min_stars
+        star_score = min_stars + (normalized * star_range)
+        return max(min_stars, min(max_stars, star_score))
     
     def _normalize_higher_better(self, value: float, all_values: List[float]) -> float:
-        """Normalize values where higher is better (1-5 star scale, 5 is best)"""
+        """Normalize values where higher is better (configurable star scale)"""
+        min_stars = config.get("scoring.star_rating.min_stars", 1.0)
+        max_stars = config.get("scoring.star_rating.max_stars", 5.0)
+        default_score = config.get("scoring.star_rating.default_score", 3.0)
+        
         if not all_values:
-            return 3.0  # Default neutral score (3 stars)
+            return default_score
         
         # Handle case where all values are 0 or identical
         if all(v == 0 for v in all_values) or len(set(all_values)) == 1:
-            return 3.0  # All models get neutral score (3 stars)
+            return default_score
         
         max_val = max(all_values)
         min_val = min(all_values)
         
         normalized = (value - min_val) / (max_val - min_val)
-        star_score = 1.0 + (normalized * 4.0)  # Scale from 0-1 to 1-5
-        return max(1.0, min(5.0, star_score))  # Ensure 1-5 star range
+        star_range = max_stars - min_stars
+        star_score = min_stars + (normalized * star_range)
+        return max(min_stars, min(max_stars, star_score))
     
     def _calculate_rankings(self, model_comparisons: List[ModelComparison]):
         """Calculate rankings based on composite scores"""
@@ -449,7 +473,7 @@ class ModelComparator:
         with open(output_path, 'w') as f:
             json.dump(result.to_dict(), f, indent=2)
         
-        self.logger.info(f"Comparison saved to {output_path}")
+        self.logger.debug(f"Comparison saved to {output_path}")
     
     def load_comparison(self, input_path: Union[str, Path]) -> ComparisonResult:
         """Load comparison result from JSON file"""

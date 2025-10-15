@@ -1,26 +1,23 @@
 """Configuration for ML Energy Score."""
 
-SUPPORTED_HARDWARE = {
-    "T4": "NVIDIA Tesla T4 16GB",
-    "V100": "NVIDIA Tesla V100 32GB",
-    "A100": "NVIDIA A100 40GB",
-    "A100-80GB": "NVIDIA A100 80GB",
-    "CPU": "CPU-only (no GPU)",
-    "M1": "Apple M1 (development only)",
-    "M2": "Apple M2 (development only)",
-}
+import sys
+from pathlib import Path
 
-SUPPORTED_TASKS = [
-    "text-classification",
-    "sentiment-analysis", 
-    "image-classification",
-    "text-generation",
-    "question-answering",
-    "token-classification",
-    "summarization",
-    "translation"
-]
+# Add project root to path to import config_loader
+project_root = Path(__file__).parent.parent
+if str(project_root) not in sys.path:
+    sys.path.append(str(project_root))
 
-# CodeCarbon settings
-PUE = 1.2  # Power Usage Effectiveness (20% infrastructure overhead)
-MEASURE_POWER_SECS = 1  # Sampling frequency
+from config_loader import get_config
+
+# Initialize configuration
+config = get_config()
+
+# Legacy constants for backward compatibility
+SUPPORTED_HARDWARE = config.get_supported_hardware()
+SUPPORTED_TASKS = config.get_supported_tasks()
+
+# CodeCarbon settings from configuration
+codecarbon_config = config.get_codecarbon_config()
+PUE = codecarbon_config.get('pue', 1.2)
+MEASURE_POWER_SECS = codecarbon_config.get('measure_power_secs', 1)

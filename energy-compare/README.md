@@ -378,3 +378,4 @@ MIT License - see LICENSE file for details.
 - Built on top of the ML Energy Score framework
 - Uses CodeCarbon for energy measurement
 - Integrates with HuggingFace model ecosystem
+

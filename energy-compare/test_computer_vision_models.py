@@ -235,9 +235,9 @@ def test_image_classification_models():
     comparator = ModelComparator(scorer=cv_scorer)
     
     model_specs = [
-        ("ResNet-50", "image_classification"),
-        ("EfficientNet-B0", "image_classification"),
-        ("Vision Transformer (ViT-B/16)", "image_classification")
+        ("ResNet-50", "image-classification"),
+        ("EfficientNet-B0", "image-classification"),
+        ("Vision Transformer (ViT-B/16)", "image-classification")
     ]
     
     result = comparator.compare_models(

@@ -5,15 +5,20 @@ from dataclasses import dataclass
 import json
 from datetime import datetime
 from pathlib import Path
+import sys
+
+# Add project root to path to import config_loader
+project_root = Path(__file__).parent.parent.parent
+if str(project_root) not in sys.path:
+    sys.path.append(str(project_root))
+
+from config_loader import get_config
 
 logger = logging.getLogger(__name__)
 
-# Supported tasks list
-SUPPORTED_TASKS = [
-    "text_generation",
-    "image_classification",
-    "object_detection"
-]
+# Get supported tasks from configuration
+config = get_config()
+SUPPORTED_TASKS = config.get_supported_tasks()
 
 @dataclass
 class ScoringResult:
@@ -35,8 +40,9 @@ class ScoringResult:
     
     def is_valid(self) -> tuple[bool, Optional[str]]:
         """Check if measurements are reliable"""
+        max_cv = config.get("scoring.validation.max_coefficient_of_variation", 0.15)
         cv = self.measurements.get('statistics', {}).get('coefficient_of_variation', 0)
-        if cv > 0.15:
+        if cv > max_cv:
             return False, f"High variance in measurements (CV={cv:.2%})"
         return True, None
 
@@ -113,7 +119,7 @@ class ModelEnergyScorer:
     
     def _validate_inputs(self, model: str, task: str, n_samples: int = None, runs: int = None):
         """Validate inputs before scoring"""
-        self.logger.debug("Validating inputs...")
+        # Validate inputs
         
         if task not in SUPPORTED_TASKS:
             raise ValidationError(
@@ -130,4 +136,4 @@ class ModelEnergyScorer:
         if runs is not None and runs <= 0:
             raise ValidationError(f"runs must be positive, got: {runs}")
         
-        self.logger.debug("Input validation passed")
+        # Input validation passed
