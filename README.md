@@ -2,6 +2,8 @@
 
 A simple and efficient Python toolkit for measuring and scoring ML model energy consumption using CodeCarbon.
 
+> **Note**: Please raise questions with the Autodesk ESG team.
+
 ## 🚀 Quick Start
 
 ```bash
