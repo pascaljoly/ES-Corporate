@@ -13,6 +13,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Callable, Iterable, Any
 from codecarbon import EmissionsTracker
+from sample_dataset import sample_dataset
 
 # Import config from parent project
 import sys
@@ -43,43 +44,71 @@ def measure_energy(
     task_name: str,
     hardware: str,
     num_samples: int = 1000,
+    seed: int = 42,
     output_dir: str = "results"
 ) -> dict:
     """
-    Measure energy consumption of a model using CodeCarbon.
+    Measure energy consumption for any inference function.
     
     Args:
-        inference_fn: A callable that processes one sample
-        dataset: Any iterable containing samples to process
-        model_name: String identifier for the model
-        task_name: String describing the task (e.g., "image-classification")
-        hardware: String from SUPPORTED_HARDWARE
-        num_samples: Number of samples to process (default 1000)
-        output_dir: Directory to save results (default "results")
+        inference_fn: User-provided function that takes a sample and runs inference
+        dataset: Any iterable (list, HF dataset, custom data)
+        model_name: Model identifier (e.g., "resnet50")
+        task_name: Task name (e.g., "image-classification")
+        hardware: Hardware type from SUPPORTED_HARDWARE
+        num_samples: Number of samples to process (default 1000).
+                    FULLY FLEXIBLE - adjust based on dataset size:
+                    - Small datasets: use 100 samples
+                    - Standard benchmarking: use 1000 samples  
+                    - Large-scale testing: use any value you need
+        seed: Random seed for dataset sampling (default 42).
+              Use same seed when comparing model versions to ensure
+              fair comparison on identical samples.
+        output_dir: Directory to save results
         
     Returns:
-        dict: Measurement results
+        Dict with energy measurements, normalized to "per 1000 queries"
         
     Raises:
         ValueError: If hardware is not supported or dataset is empty
+        
+    Examples:
+        >>> # Small dataset - use 100 samples
+        >>> results = measure_energy(
+        >>>     inference_fn=my_fn,
+        >>>     dataset=small_dataset,
+        >>>     model_name="model-v1",
+        >>>     task_name="classification",
+        >>>     hardware="T4",
+        >>>     num_samples=100,  # Adjust to dataset size
+        >>>     seed=42
+        >>> )
+        >>> 
+        >>> # Standard benchmarking - 1000 samples
+        >>> results = measure_energy(
+        >>>     inference_fn=my_fn,
+        >>>     dataset=large_dataset,
+        >>>     model_name="model-v1",
+        >>>     task_name="classification",
+        >>>     hardware="T4",
+        >>>     num_samples=1000,  # Default
+        >>>     seed=42
+        >>> )
+        >>> 
+        >>> # Compare model versions (use same seed!)
+        >>> results_v1 = measure_energy(..., model_name="v1", seed=42)
+        >>> results_v2 = measure_energy(..., model_name="v2", seed=42)
     """
     
     # Validate hardware
     if hardware not in SUPPORTED_HARDWARE:
         raise ValueError(f"Hardware '{hardware}' not supported. Available: {list(SUPPORTED_HARDWARE.keys())}")
     
-    # Convert dataset to list and validate
-    dataset_list = list(dataset)
-    if not dataset_list:
-        raise ValueError("Dataset is empty")
+    # Use reproducible sampling
+    samples = sample_dataset(dataset, num_samples=num_samples, seed=seed)
+    actual_samples = len(samples)
     
-    # Sample the dataset
-    if len(dataset_list) < num_samples:
-        print(f"Warning: Dataset has {len(dataset_list)} samples, but {num_samples} requested. Using all available samples.")
-        num_samples = len(dataset_list)
-    
-    samples = dataset_list[:num_samples]
-    print(f"Processing {len(samples)} samples for model '{model_name}' on {hardware}")
+    print(f"Processing {actual_samples} samples for model '{model_name}' on {hardware}")
     
     # Initialize CodeCarbon tracker
     tracker = EmissionsTracker(
@@ -126,8 +155,8 @@ def measure_energy(
         energy_kwh = 0.0
         co2_kg = 0.0
     
-    # Calculate normalized metrics
-    kwh_per_1000_queries = (energy_kwh / len(samples)) * 1000 if len(samples) > 0 else 0.0
+    # Calculate normalized metrics (ALWAYS normalize to per 1000 queries)
+    kwh_per_1000_queries = (energy_kwh / actual_samples) * 1000 if actual_samples > 0 else 0.0
     
     # Create results
     results = {
@@ -135,7 +164,8 @@ def measure_energy(
         "task_name": task_name,
         "hardware": hardware,
         "timestamp": datetime.now().isoformat(),
-        "num_samples": len(samples),
+        "num_samples": actual_samples,  # Actual samples processed
+        "seed": seed,  # Record the seed used
         "energy_kwh": round(energy_kwh, 6),
         "co2_kg": round(co2_kg, 6),
         "duration_seconds": round(duration_seconds, 2),
