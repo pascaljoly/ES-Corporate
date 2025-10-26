@@ -1,10 +1,12 @@
 # Energy Measurement Script
 
-A simple Python script for measuring energy consumption of ML models using CodeCarbon.
+A simple Python script for measuring energy consumption of ML models using CodeCarbon with flexible, reproducible sampling.
 
 ## Features
 
 - **Simple API**: Easy-to-use function for measuring model energy consumption
+- **Flexible Sampling**: Fully customizable sample sizes (10-5000+ samples)
+- **Reproducible Comparisons**: Use same seed for fair model comparisons
 - **CodeCarbon Integration**: Uses CodeCarbon for accurate energy tracking
 - **Hardware Validation**: Validates against supported hardware types
 - **Progress Tracking**: Shows progress every 100 samples
@@ -26,15 +28,31 @@ def my_inference_function(sample):
     # Your model inference code here
     return processed_result
 
-# Measure energy
+# Small dataset - use 100 samples
 results = measure_energy(
     inference_fn=my_inference_function,
-    dataset=my_dataset,
+    dataset=small_dataset,
     model_name="my_model",
     task_name="text-classification",
     hardware="CPU",
-    num_samples=1000
+    num_samples=100,  # Flexible sample size
+    seed=42  # Reproducible sampling
 )
+
+# Standard benchmarking - 1000 samples
+results = measure_energy(
+    inference_fn=my_inference_function,
+    dataset=large_dataset,
+    model_name="my_model",
+    task_name="text-classification",
+    hardware="CPU",
+    num_samples=1000,  # Default
+    seed=42
+)
+
+# Compare model versions (use same seed!)
+results_v1 = measure_energy(..., model_name="v1", seed=42)
+results_v2 = measure_energy(..., model_name="v2", seed=42)
 
 print(f"Energy consumption: {results['kwh_per_1000_queries']:.4f} kWh/1k queries")
 ```
@@ -59,6 +77,44 @@ Measure energy consumption of a model.
 
 **Raises:**
 - `ValueError`: If hardware is not supported or dataset is empty
+
+## Flexible Sample Sizes
+
+The `num_samples` parameter is fully customizable:
+
+- **Small datasets (<1000 samples)**: Use what you have (e.g., `num_samples=100`)
+- **Standard benchmarking**: Use 1000 samples (default)
+- **Large-scale testing**: Use any value you need (e.g., `num_samples=5000`)
+
+All results are normalized to "per 1000 queries" for fair comparison.
+
+## Reproducible Comparisons
+
+Always use the same `seed` when comparing model versions:
+
+```python
+# Test baseline model
+results_baseline = measure_energy(
+    ..., 
+    model_name="baseline", 
+    num_samples=500,  # Custom size
+    seed=42  # Fixed seed
+)
+
+# Test optimized model (same seed!)
+results_optimized = measure_energy(
+    ..., 
+    model_name="optimized", 
+    num_samples=500,  # Same size
+    seed=42  # Same seed = same samples
+)
+
+# Now fairly comparable
+improvement = (results_baseline['kwh_per_1000_queries'] - 
+               results_optimized['kwh_per_1000_queries']) / \
+               results_baseline['kwh_per_1000_queries']
+print(f"Energy improvement: {improvement*100:.1f}%")
+```
 
 ## Supported Hardware
 
