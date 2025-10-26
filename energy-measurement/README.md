@@ -77,7 +77,7 @@ Measure energy consumption of a model.
 - **`inference_fn`**: Your model inference function that takes a sample and returns processed result
 - **`dataset`**: Any iterable (list, HuggingFace dataset, generator, etc.)
 - **`model_name`**: Unique identifier for your model (e.g., "resnet50", "gpt-2")
-- **`task_name`**: Task type (e.g., "image-classification", "text-generation")
+- **`task_name`**: Descriptive label for your ML task (any string)
 - **`hardware`**: Must be one of: CPU, T4, V100, A100, A100-80GB, H100, H100-SXM, M1, M2
 - **`num_samples`**: Fully flexible (10-5000+ samples). Use 100 for small datasets, 1000 for standard benchmarking
 - **`seed`**: Critical for fair comparisons. Use same seed when comparing model versions
@@ -142,6 +142,25 @@ improvement = (results_baseline['kwh_per_1000_queries'] -
                results_baseline['kwh_per_1000_queries']
 print(f"Energy improvement: {improvement*100:.1f}%")
 ```
+
+## Task Name Parameter
+
+The `task_name` is a descriptive label for your ML task. You can use any string that describes what your model does:
+
+**Examples:**
+- `"image-classification"` - Image classification
+- `"text-generation"` - Text generation  
+- `"speech-recognition"` - Speech recognition
+- `"recommendation-system"` - Recommendation system
+- `"anomaly-detection"` - Anomaly detection
+- `"custom-model"` - Custom model
+- `"experimental-task"` - Experimental task
+
+**Key Points:**
+- ✅ **Any string is valid** - No restrictions on task names
+- ✅ **Descriptive purpose** - Just for organization and identification
+- ✅ **Independent of functionality** - The tool doesn't validate task names
+- ✅ **Use what makes sense** - Choose a name that describes your specific use case
 
 ## Supported Hardware
 
