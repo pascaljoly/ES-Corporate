@@ -1,4 +1,4 @@
-# AI Energy Score Enterprise
+# AI Energy Score for Enterprise
 
 - A comprehensive suite of tools for measuring and comparing energy consumption and CO2 emissions of machine learning models during inference. 
 - Extending the capabilities of the Hugging Face Energy Score to internal models, beyond Transformer and Diffuser architecture, and for custom use cases. https://huggingface.github.io/AIEnergyScore/#documentation
