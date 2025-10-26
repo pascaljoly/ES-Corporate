@@ -1,8 +1,9 @@
 # Energy Measurement Tool (EStool)
 
 A simple and efficient Python toolkit for measuring and scoring ML model energy consumption using CodeCarbon.
-
-> **Note**: Please raise questions with the Autodesk ESG team.
+Inspired by the Hugging Face Energy Score methodology: https://huggingface.github.io/AIEnergyScore/#documentation
+Extending to internal corporate models and use cases.
+Scoring tool compares models for similar use cases and hardware.
 
 ## 🚀 Quick Start
 
