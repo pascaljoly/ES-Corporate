@@ -70,10 +70,37 @@ Measure energy consumption of a model.
 - `task_name` (str): Task description (e.g., "text-classification")
 - `hardware` (str): Hardware type (must be in SUPPORTED_HARDWARE)
 - `num_samples` (int, optional): Number of samples to process (default: 1000)
+- `seed` (int, optional): Random seed for reproducible sampling (default: 42)
 - `output_dir` (str, optional): Output directory (default: "results")
+
+**Parameter Details:**
+- **`inference_fn`**: Your model inference function that takes a sample and returns processed result
+- **`dataset`**: Any iterable (list, HuggingFace dataset, generator, etc.)
+- **`model_name`**: Unique identifier for your model (e.g., "resnet50", "gpt-2")
+- **`task_name`**: Task type (e.g., "image-classification", "text-generation")
+- **`hardware`**: Must be one of: CPU, T4, V100, A100, A100-80GB, H100, H100-SXM, M1, M2
+- **`num_samples`**: Fully flexible (10-5000+ samples). Use 100 for small datasets, 1000 for standard benchmarking
+- **`seed`**: Critical for fair comparisons. Use same seed when comparing model versions
+- **`output_dir`**: Directory where JSON results will be saved
 
 **Returns:**
 - `dict`: Measurement results with energy, CO2, and timing data
+
+**Return Value Structure:**
+```json
+{
+  "model_name": "resnet50",
+  "task_name": "image-classification", 
+  "hardware": "CPU",
+  "timestamp": "2025-10-25T18:42:41.123456",
+  "num_samples": 100,
+  "seed": 42,
+  "energy_kwh": 0.000008,
+  "co2_kg": 0.000002,
+  "duration_seconds": 3.16,
+  "kwh_per_1000_queries": 0.000084
+}
+```
 
 **Raises:**
 - `ValueError`: If hardware is not supported or dataset is empty
