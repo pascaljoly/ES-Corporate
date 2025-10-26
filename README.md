@@ -1,149 +1,187 @@
-# AI Energy Score Corporate
+# Energy Measurement Tool (EStool)
 
-A comprehensive suite of tools for measuring and comparing energy consumption and CO2 emissions of machine learning models during inference.
-
-> **Note**: Please raise questions with the Autodesk ESG team.
-
-## 🏗️ Project Structure
-
-This repository contains two main components:
-
-### 1. ML Energy Score (`ml_energy_score/`)
-A production-ready tool for measuring energy consumption and CO2 emissions of ML models during inference.
-
-**Key Features:**
-- Real energy measurement using CodeCarbon
-- Multi-task support (text classification, image classification, text generation, Q&A, etc.)
-- Hardware flexibility (CPU, GPU, Apple Silicon)
-- HuggingFace integration
-- Comprehensive metrics (energy, CO2, throughput, timing)
-- Organized JSON output format
-
-### 2. Energy Compare (`energy-compare/`)
-A framework for comparing and scoring different ML models based on their energy efficiency.
-
-**Key Features:**
-- Model comparison framework
-- Scoring algorithms for energy efficiency
-- Configurable comparison metrics
-- Test suite for validation
+A simple and efficient Python toolkit for measuring and scoring ML model energy consumption using CodeCarbon.
 
 ## 🚀 Quick Start
 
-### Installation
-
 ```bash
-# Clone the repository
-git clone git@git.autodesk.com:saas/ai_energy_score_corporate.git
-cd ai_energy_score_corporate
-
 # Install dependencies
 pip install -r requirements.txt
+
+# Measure energy consumption of a model
+python energy-measurement/measure_energy.py
+
+# Test the measurement function
+python energy-measurement/test_dummy.py
+python energy-measurement/test_pytorch.py
+
+# Calculate energy efficiency scores
+python energy-measurement/calculate_scores.py
 ```
 
-### Basic Usage
+## 📁 Project Structure
+
+```
+EStool/
+├── energy-measurement/          # Core energy measurement functionality
+│   ├── measure_energy.py        # Main measurement function
+│   ├── calculate_scores.py      # Energy scoring with star ratings
+│   ├── test_dummy.py           # Test with dummy model
+│   ├── test_pytorch.py         # Test with real PyTorch model
+│   ├── test_scoring.py         # Test scoring functionality
+│   └── README.md               # Detailed documentation
+├── archive/                     # Archived older functionality
+└── README.md                   # This file
+```
+
+## 🔧 Core Features
+
+### 1. Energy Measurement (`measure_energy.py`)
+
+Measure energy consumption of any ML model:
 
 ```python
-from ml_energy_score.measure import measure_model_energy
-from datasets import load_dataset
+from energy_measurement.measure_energy import measure_energy
 
-# Load a dataset
-dataset = load_dataset("imdb", split="test[:100]")
+def my_inference_function(sample):
+    # Your model inference code
+    return processed_result
 
-# Measure energy consumption
-result = measure_model_energy(
-    model_path="distilbert-base-uncased-finetuned-sst-2-english",
-    task="text-classification",
-    dataset=dataset,
+# Measure energy
+results = measure_energy(
+    inference_fn=my_inference_function,
+    dataset=my_dataset,
+    model_name="my_model",
+    task_name="text-classification",
     hardware="CPU",
-    num_samples=50,
-    output_dir="results"
+    num_samples=1000
 )
 
-print(f"Energy consumed: {result['energy_kwh']} kWh")
-print(f"CO2 emissions: {result['co2_kg']} kg")
-print(f"Throughput: {result['samples_per_second']} samples/sec")
+print(f"Energy: {results['kwh_per_1000_queries']:.4f} kWh/1k queries")
 ```
 
-### Run Demo
+**Features:**
+- ✅ **CodeCarbon Integration**: Accurate energy tracking with PUE=1.2
+- ✅ **Hardware Support**: CPU, T4, V100, A100, H100, M1, M2
+- ✅ **Progress Tracking**: Shows progress every 100 samples
+- ✅ **JSON Output**: Structured results with timestamps
+- ✅ **Error Handling**: Validates hardware and datasets
 
+### 2. Energy Scoring (`calculate_scores.py`)
+
+Calculate star ratings for energy efficiency:
+
+```python
+from energy_measurement.calculate_scores import calculate_scores, print_scores
+
+# Calculate scores for all models in a task
+scores = calculate_scores('image-classification', 'CPU')
+print_scores(scores)
+```
+
+**Star Rating System:**
+- ⭐⭐⭐⭐⭐ **5 stars**: Top 20% (most efficient)
+- ⭐⭐⭐⭐☆ **4 stars**: Next 20%
+- ⭐⭐⭐☆☆ **3 stars**: Middle 20%
+- ⭐⭐☆☆☆ **2 stars**: Next 20%
+- ⭐☆☆☆☆ **1 star**: Bottom 20% (least efficient)
+
+## 🧪 Testing
+
+### Dummy Model Test (No Dependencies)
 ```bash
-# Quick demo with a small model
-python ml_energy_score/run_demo.py
-
-# Comprehensive testing
-python ml_energy_score/test_real_model.py
+python energy-measurement/test_dummy.py
 ```
 
-## 📊 Supported Tasks
+### PyTorch Model Test (Real Neural Network)
+```bash
+python energy-measurement/test_pytorch.py
+```
 
-| Task | Example Models | Description |
-|------|----------------|-------------|
-| `text-classification` | `distilbert-base-uncased-finetuned-sst-2-english` | Sentiment, topic classification |
-| `sentiment-analysis` | `cardiffnlp/twitter-roberta-base-sentiment-latest` | Sentiment detection |
-| `image-classification` | `google/vit-base-patch16-224` | Image recognition |
-| `text-generation` | `gpt2`, `microsoft/DialoGPT-medium` | Text completion |
-| `question-answering` | `distilbert-base-cased-distilled-squad` | Q&A systems |
-| `token-classification` | `dbmdz/bert-large-cased-finetuned-conll03-english` | NER, POS tagging |
-| `summarization` | `facebook/bart-large-cnn` | Text summarization |
-| `translation` | `Helsinki-NLP/opus-mt-en-de` | Language translation |
+### Scoring Function Test
+```bash
+python energy-measurement/test_scoring.py
+```
 
-## 🔧 Hardware Support
+## 📊 Example Results
 
-- **CPU**: CPU-only inference (works everywhere)
+**CPU Models (10 models):**
+```
+⭐⭐⭐⭐⭐ efficientnet-b0: 0.0250 kWh (percentile: 0)
+⭐⭐⭐⭐⭐ mobilenet-v2: 0.0420 kWh (percentile: 11)
+⭐⭐⭐⭐☆ resnet18: 0.0680 kWh (percentile: 22)
+⭐⭐⭐⭐☆ resnet50: 0.1250 kWh (percentile: 33)
+⭐⭐⭐☆☆ vgg16: 0.1850 kWh (percentile: 44)
+```
+
+**GPU Models (5 models):**
+```
+⭐⭐⭐⭐⭐ efficientnet-b0-gpu: 0.0150 kWh (percentile: 0)
+⭐⭐⭐⭐☆ resnet50-gpu: 0.0350 kWh (percentile: 25)
+⭐⭐⭐☆☆ vgg16-gpu: 0.0550 kWh (percentile: 50)
+```
+
+## 📋 Supported Hardware
+
+- **CPU**: CPU-only execution
 - **T4**: NVIDIA Tesla T4 16GB
-- **V100**: NVIDIA Tesla V100 32GB  
+- **V100**: NVIDIA Tesla V100 32GB
 - **A100**: NVIDIA A100 40GB/80GB
+- **H100**: NVIDIA H100 80GB
 - **M1/M2**: Apple Silicon (development)
 
 ## 📁 Output Format
 
-Results are saved as structured JSON files:
+Results are saved as JSON files:
 
 ```json
 {
-  "model_name": "distilbert-base-uncased-finetuned-sst-2-english",
-  "task": "text-classification",
+  "model_name": "mobilenet-v2",
+  "task_name": "image-classification",
   "hardware": "CPU",
-  "energy_kwh": 0.000123,
-  "co2_kg": 0.000056,
-  "duration_seconds": 2.45,
-  "samples_per_second": 20.4,
-  "kwh_per_1000_queries": 2.46
+  "timestamp": "2025-10-25T17:56:08.882447",
+  "num_samples": 100,
+  "energy_kwh": 0.000008,
+  "co2_kg": 0.000002,
+  "duration_seconds": 3.16,
+  "kwh_per_1000_queries": 0.000084
 }
 ```
 
-## 🧪 Testing
+## 🔧 Requirements
 
-```bash
-# Run all tests
-python -m pytest energy-compare/tests/ -v
-python -m pytest ml_energy_score/test_measure.py -v
-
-# Test with real models
-python ml_energy_score/test_real_model.py
-```
+- Python 3.7+
+- CodeCarbon >= 3.0.0
+- PyTorch >= 1.9.0 (for PyTorch tests)
+- NumPy >= 1.21.0
 
 ## 📚 Documentation
 
-- **ML Energy Score**: See `ml_energy_score/README.md` for detailed documentation
-- **User Guide**: See `ml_energy_score/USER_GUIDE.md` for testing with real models
-- **Testing Summary**: See `ml_energy_score/TESTING_SUMMARY.md` for test results
+- **Main Documentation**: `energy-measurement/README.md`
+- **API Reference**: See docstrings in source files
+- **Examples**: `energy-measurement/example_usage.py`
 
-## 🤝 Contributing
+## 🗂️ Archive
 
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new functionality
-4. Run the test suite
-5. Submit a pull request
+Older functionality has been moved to the `archive/` directory:
+- `archive/energy-compare/`: Previous energy comparison framework
+- `archive/ml_energy_score/`: Previous ML energy scoring system
+- `archive/tests/`: Previous test suites
+- `archive/`: Configuration system and demos
 
 ## 📄 License
 
 MIT License - see LICENSE file for details.
 
-## 🙏 Acknowledgments
+## 🤝 Contributing
 
-- [CodeCarbon](https://codecarbon.io/) for energy measurement
-- [HuggingFace](https://huggingface.co/) for model ecosystem
-- [PyTorch](https://pytorch.org/) for deep learning framework
+This is a focused energy measurement toolkit. For contributions, please ensure:
+1. All tests pass
+2. Code follows the existing style
+3. New features include comprehensive tests
+4. Documentation is updated
+
+---
+
+**Created**: October 25, 2025  
+**Focus**: Simple, efficient energy measurement for ML models

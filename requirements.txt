@@ -1,21 +1,5 @@
-# Core ML Energy Score dependencies
-codecarbon>=2.4.0
-datasets>=2.14.0
-transformers>=4.30.0
-torch>=2.0.0
-pyyaml>=6.0
-
-# Testing dependencies
-pytest>=7.4.0
-pytest-cov>=4.1.0
-pytest-mock>=3.11.0
-
-# Optional GPU support (uncomment if needed)
-# torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-
-# Development dependencies (optional)
-# jupyter>=1.0.0
-# black>=23.0.0
-# flake8>=6.0.0
-# mypy>=1.0.0
-
+# Core dependencies for energy measurement
+codecarbon>=3.0.0
+torch>=1.9.0
+torchvision>=0.10.0
+numpy>=1.21.0

@@ -109,8 +109,22 @@ def measure_energy(
     
     # Extract results
     duration_seconds = end_time - start_time
-    energy_kwh = getattr(tracker, 'energy_consumed', 0.0) if hasattr(tracker, 'energy_consumed') else 0.0
-    co2_kg = getattr(tracker, 'emissions', 0.0) if hasattr(tracker, 'emissions') else 0.0
+    
+    # Get energy and CO2 from tracker
+    try:
+        # Try to get energy from the tracker's final emissions data
+        if hasattr(tracker, 'final_emissions_data') and tracker.final_emissions_data:
+            emissions_data = tracker.final_emissions_data
+            energy_kwh = getattr(emissions_data, 'energy_consumed', 0.0)
+            co2_kg = getattr(emissions_data, 'emissions', 0.0)
+        else:
+            # Fallback to direct attributes
+            energy_kwh = getattr(tracker, 'energy_consumed', 0.0)
+            co2_kg = getattr(tracker, 'emissions', 0.0)
+    except Exception as e:
+        print(f"Warning: Could not extract energy data: {e}")
+        energy_kwh = 0.0
+        co2_kg = 0.0
     
     # Calculate normalized metrics
     kwh_per_1000_queries = (energy_kwh / len(samples)) * 1000 if len(samples) > 0 else 0.0
