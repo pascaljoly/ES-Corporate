@@ -5,10 +5,6 @@ Inspired by the Hugging Face Energy Score methodology: https://huggingface.githu
 Extending to internal corporate models and use cases.
 Scoring tool compares models for similar use cases and hardware.
 
-**Developed by:** Pascal Joly/IT Climate Ed, LLC
-**License:** MIT
-**Status:** Open source tool used in sustainability consulting
-
 ## Purpose
 Help AI engineers make informed decisions about model selection based on 
 energy efficiency, supporting sustainable AI practices.
@@ -199,3 +195,6 @@ This is a focused energy measurement toolkit. For contributions, please ensure:
 
 **Created**: October 25, 2025  
 **Focus**: Simple, efficient energy measurement for ML models
+**Developed by:** Pascal Joly/IT Climate Ed, LLC
+**License:** MIT
+**Status:** Open source tool used in sustainability consulting
