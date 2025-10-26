@@ -57,7 +57,7 @@ results_v2 = measure_energy(..., model_name="v2", seed=42)
 print(f"Energy consumption: {results['kwh_per_1000_queries']:.4f} kWh/1k queries")
 ```
 
-## API Reference
+## Usage Guide
 
 ### `measure_energy()`
 
