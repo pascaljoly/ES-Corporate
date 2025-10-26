@@ -5,8 +5,6 @@ Inspired by the Hugging Face Energy Score: https://huggingface.github.io/AIEnerg
 Extending functionality to internal enterprise models, independent of architecture.
 Energy scoring comparison for any use case.
 
-> **Note**: Please raise questions with the Autodesk ESG team.
-
 ## 🚀 Quick Start
 
 ```bash
