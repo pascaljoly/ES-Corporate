@@ -78,7 +78,7 @@ Measure energy consumption of a model.
 - **`dataset`**: Any iterable (list, HuggingFace dataset, generator, etc.)
 - **`model_name`**: Unique identifier for your model (e.g., "resnet50", "gpt-2")
 - **`task_name`**: Descriptive label for your ML task (any string)
-- **`hardware`**: Must be one of: CPU, T4, V100, A100, A100-80GB, H100, H100-SXM, M1, M2
+- **`hardware`**: Hardware identifier (see Hardware Support below for CodeCarbon compatibility)
 - **`num_samples`**: Fully flexible (10-5000+ samples). Use 100 for small datasets, 1000 for standard benchmarking
 - **`seed`**: Critical for fair comparisons. Use same seed when comparing model versions
 - **`output_dir`**: Directory where JSON results will be saved
@@ -162,17 +162,33 @@ The `task_name` is a descriptive label for your ML task. You can use any string 
 - ✅ **Independent of functionality** - The tool doesn't validate task names
 - ✅ **Use what makes sense** - Choose a name that describes your specific use case
 
-## Supported Hardware
+## Hardware Support
 
-- `CPU`: CPU-only execution
-- `T4`: NVIDIA Tesla T4 16GB
-- `V100`: NVIDIA Tesla V100 32GB
-- `A100`: NVIDIA A100 40GB
-- `A100-80GB`: NVIDIA A100 80GB
-- `H100`: NVIDIA H100 80GB
-- `H100-SXM`: NVIDIA H100 SXM 80GB
-- `M1`: Apple M1 (development only)
-- `M2`: Apple M2 (development only)
+The energy measurement tool uses [CodeCarbon](https://mlco2.github.io/codecarbon/) for hardware monitoring, which supports:
+
+### **CPU Support:**
+- **Linux**: Intel and AMD processors via Intel RAPL interface
+- **Windows/macOS (Intel)**: Intel Power Gadget (discontinued, may have limitations)
+- **Apple Silicon**: M1, M2 chips via `powermetrics` (requires `sudo` privileges)
+
+### **GPU Support:**
+- **NVIDIA GPUs**: All NVIDIA GPUs via `nvidia-ml-py` library
+  - Tesla series (T4, V100)
+  - Ampere series (A100, A100-80GB)
+  - Hopper series (H100, H100-SXM)
+  - RTX series (RTX 4090, RTX 4080, etc.)
+  - Any other NVIDIA GPU with nvidia-ml-py support
+
+### **RAM Support:**
+- **Automatic estimation** based on RAM slots and architecture
+- **Custom override** available via `force_ram_power` parameter
+
+### **Platform-Specific Notes:**
+- **Linux**: Requires access to `/sys/class/powercap/intel-rapl/` files
+- **Apple Silicon**: Requires `sudo` privileges for `powermetrics`
+- **Windows**: Intel Power Gadget limitations may apply
+
+**Reference**: [CodeCarbon Methodology Documentation](https://mlco2.github.io/codecarbon/methodology.html)
 
 ## Output Format
 
