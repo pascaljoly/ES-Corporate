@@ -1,9 +1,17 @@
 # Energy Measurement Tool (EStool)
 
 A simple and efficient Python toolkit for measuring and scoring ML model energy consumption using CodeCarbon.
-Inspired by the Hugging Face Energy Score: https://huggingface.github.io/AIEnergyScore/#documentation
-Extending functionality to internal enterprise models, independent of architecture.
-Energy scoring comparison for any use case.
+
+Inspired by the Hugging Face Energy Score methodology: https://huggingface.github.io/AIEnergyScore/#documentation
+Extending to internal corporate models and use cases.
+Scoring tool compares models for similar use cases and hardware.
+
+## Purpose
+Help AI engineers make informed decisions about model selection based on 
+energy efficiency, supporting sustainable AI practices.
+
+## Usage
+This tool is used by sustainability consultants to measure client models
 
 ## 🚀 Quick Start
 
@@ -15,8 +23,8 @@ pip install -r requirements.txt
 python energy-measurement/measure_energy.py
 
 # Test the measurement function
-python energy-measurement/test_dummy.py
-python energy-measurement/test_pytorch.py
+python energy-measurement/test/test_dummy.py
+python energy-measurement/test/test_pytorch.py
 
 # Calculate energy efficiency scores
 python energy-measurement/calculate_scores.py
@@ -29,9 +37,11 @@ EStool/
 ├── energy-measurement/          # Core energy measurement functionality
 │   ├── measure_energy.py        # Main measurement function
 │   ├── calculate_scores.py      # Energy scoring with star ratings
-│   ├── test_dummy.py           # Test with dummy model
-│   ├── test_pytorch.py         # Test with real PyTorch model
-│   ├── test_scoring.py         # Test scoring functionality
+│   ├── test/                    # Test files and utilities
+│   │   ├── test_dummy.py       # Test with dummy model
+│   │   ├── test_pytorch.py     # Test with real PyTorch model
+│   │   ├── test_scoring.py     # Test scoring functionality
+│   │   └── sample_dataset.py   # Dataset sampling utilities
 │   └── README.md               # Detailed documentation
 ├── archive/                     # Archived older functionality
 └── README.md                   # This file
@@ -93,17 +103,17 @@ print_scores(scores)
 
 ### Dummy Model Test (No Dependencies)
 ```bash
-python energy-measurement/test_dummy.py
+python energy-measurement/test/test_dummy.py
 ```
 
 ### PyTorch Model Test (Real Neural Network)
 ```bash
-python energy-measurement/test_pytorch.py
+python energy-measurement/test/test_pytorch.py
 ```
 
 ### Scoring Function Test
 ```bash
-python energy-measurement/test_scoring.py
+python energy-measurement/test/test_scoring.py
 ```
 
 ## 📊 Example Results
@@ -188,3 +198,6 @@ This is a focused energy measurement toolkit. For contributions, please ensure:
 
 **Created**: October 25, 2025  
 **Focus**: Simple, efficient energy measurement for ML models
+**Developed by:** Pascal Joly/IT Climate Ed, LLC
+**License:** MIT
+**Status:** Open source tool used in sustainability consulting
