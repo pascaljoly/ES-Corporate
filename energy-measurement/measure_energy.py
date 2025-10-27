@@ -13,7 +13,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Callable, Iterable, Any
 from codecarbon import EmissionsTracker
-from sample_dataset import sample_dataset
+from test.sample_dataset import sample_dataset
 
 # Import config from parent project
 import sys

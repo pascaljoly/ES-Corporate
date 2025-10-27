@@ -266,7 +266,7 @@ results = measure_energy(
 Run the test suite:
 
 ```bash
-python test_measure.py
+python test/test_measure.py
 ```
 
 Run examples:

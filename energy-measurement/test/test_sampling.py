@@ -9,7 +9,7 @@ from pathlib import Path
 # Add current directory to path
 sys.path.append(str(Path(__file__).parent))
 
-from sample_dataset import sample_dataset, sample_dataset_with_replacement
+from .sample_dataset import sample_dataset, sample_dataset_with_replacement
 
 
 def test_reproducibility():
