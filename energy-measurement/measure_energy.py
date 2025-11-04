@@ -9,11 +9,17 @@ of ML models using CodeCarbon for tracking.
 import json
 import time
 import os
+import warnings
 from datetime import datetime
 from pathlib import Path
 from typing import Callable, Iterable, Any
 from codecarbon import EmissionsTracker
 from test.sample_dataset import sample_dataset
+from security_utils import (
+    sanitize_path_component,
+    validate_input_length,
+    sanitize_and_validate_path
+)
 
 # Import config from parent project
 import sys
@@ -100,9 +106,22 @@ def measure_energy(
         >>> results_v2 = measure_energy(..., model_name="v2", seed=42)
     """
     
+    # Validate input lengths
+    validate_input_length(model_name, "model_name")
+    validate_input_length(task_name, "task_name")
+    validate_input_length(hardware, "hardware")
+    validate_input_length(output_dir, "output_dir", max_length=500)  # Allow longer paths for output_dir
+    
     # Validate hardware
     if hardware not in SUPPORTED_HARDWARE:
         raise ValueError(f"Hardware '{hardware}' not supported. Available: {list(SUPPORTED_HARDWARE.keys())}")
+    
+    # Validate num_samples
+    if num_samples <= 0:
+        raise ValueError("num_samples must be positive")
+    
+    if num_samples > 1000000:  # Reasonable upper limit
+        raise ValueError(f"num_samples ({num_samples}) exceeds maximum of 1,000,000")
     
     # Use reproducible sampling
     samples = sample_dataset(dataset, num_samples=num_samples, seed=seed)
@@ -150,10 +169,16 @@ def measure_energy(
             # Fallback to direct attributes
             energy_kwh = getattr(tracker, 'energy_consumed', 0.0)
             co2_kg = getattr(tracker, 'emissions', 0.0)
-    except Exception as e:
-        print(f"Warning: Could not extract energy data: {e}")
+    except (AttributeError, KeyError) as e:
+        # Expected errors from tracker - log warning but continue
+        warnings.warn(f"Could not extract energy data from tracker: {e}. Using default values.")
         energy_kwh = 0.0
         co2_kg = 0.0
+    except Exception as e:
+        # Unexpected errors - re-raise with context
+        raise RuntimeError(
+            f"Unexpected error extracting energy data from tracker: {e}"
+        ) from e
     
     # Calculate normalized metrics (ALWAYS normalize to per 1000 queries)
     kwh_per_1000_queries = (energy_kwh / actual_samples) * 1000 if actual_samples > 0 else 0.0
@@ -185,20 +210,41 @@ def measure_energy(
 
 
 def save_results(results: dict, output_dir: str) -> None:
-    """Save results to JSON file."""
+    """
+    Save results to JSON file with path sanitization.
     
-    # Create output directory structure
-    task_dir = Path(output_dir) / results["task_name"]
-    task_dir.mkdir(parents=True, exist_ok=True)
+    Args:
+        results: Results dictionary to save
+        output_dir: Base output directory (will be sanitized)
+        
+    Raises:
+        ValueError: If path components are invalid
+        OSError: If file cannot be written
+    """
+    # Sanitize and validate paths
+    sanitized_output_dir = sanitize_path_component(output_dir, max_length=500)
+    sanitized_task_name = sanitize_path_component(results["task_name"])
+    sanitized_model_name = sanitize_path_component(results["model_name"], max_length=200)
     
-    # Create filename with timestamp
+    # Create safe directory path
+    task_dir = sanitize_and_validate_path(sanitized_output_dir, sanitized_task_name, create=True)
+    
+    # Create filename with timestamp (timestamp is safe as it's generated)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"{results['model_name']}_{timestamp}.json"
+    filename = f"{sanitized_model_name}_{timestamp}.json"
+    
+    # Validate filename doesn't contain unsafe characters
+    if any(char in filename for char in ['/', '\\', '..', '<', '>', ':', '"', '|', '?', '*']):
+        raise ValueError(f"Generated filename contains unsafe characters: {filename}")
+    
     filepath = task_dir / filename
     
     # Save JSON
-    with open(filepath, 'w') as f:
-        json.dump(results, f, indent=2)
+    try:
+        with open(filepath, 'w') as f:
+            json.dump(results, f, indent=2)
+    except OSError as e:
+        raise OSError(f"Failed to write results file {filepath}: {e}") from e
     
     print(f"📁 Results saved to: {filepath}")
 

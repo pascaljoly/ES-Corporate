@@ -8,8 +8,8 @@ import random
 import sys
 from pathlib import Path
 
-# Add current directory to path
-sys.path.append(str(Path(__file__).parent))
+# Add parent directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from measure_energy import measure_energy
 

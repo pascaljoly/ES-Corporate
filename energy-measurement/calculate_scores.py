@@ -11,6 +11,13 @@ import warnings
 from pathlib import Path
 from typing import Dict, List, Any
 from datetime import datetime
+from security_utils import (
+    sanitize_path_component,
+    validate_input_length,
+    sanitize_and_validate_path,
+    validate_json_file_size,
+    MAX_FILES_TO_PROCESS
+)
 
 
 def calculate_scores(task_name: str, hardware: str, results_dir: str = "results") -> dict:
@@ -64,15 +71,50 @@ def calculate_scores(task_name: str, hardware: str, results_dir: str = "results"
         ...     print(f"{stars} {model['model_name']}: {model['kwh_per_1000_queries']:.4f} kWh")
     """
     
-    # Construct path to results directory
-    results_path = Path(results_dir) / task_name / hardware
+    # Validate input lengths
+    validate_input_length(task_name, "task_name")
+    validate_input_length(hardware, "hardware")
+    validate_input_length(results_dir, "results_dir", max_length=500)
+    
+    # Sanitize and construct safe path to results directory
+    try:
+        # Don't sanitize base directory if it's already a Path-like string (may contain slashes)
+        # Only sanitize the component parts (task_name and hardware)
+        sanitized_task_name = sanitize_path_component(task_name)
+        sanitized_hardware = sanitize_path_component(hardware)
+        
+        # Build path - use results_dir as-is if it's a valid path, sanitize if it's just a component
+        base_path = Path(results_dir)
+        
+        # Build the full path with sanitized components
+        results_path = base_path / sanitized_task_name / sanitized_hardware
+        
+        # Resolve to check for traversal
+        try:
+            results_path = results_path.resolve()
+        except (OSError, RuntimeError) as e:
+            raise ValueError(f"Cannot resolve path: {e}") from e
+    except ValueError as e:
+        raise ValueError(f"Invalid path components: {e}") from e
     
     # Check if directory exists
     if not results_path.exists():
         raise FileNotFoundError(f"Results directory not found: {results_path}")
     
+    if not results_path.is_dir():
+        raise ValueError(f"Path is not a directory: {results_path}")
+    
     # Find all JSON files in the directory
     json_files = list(results_path.glob("*.json"))
+    
+    # Check file count limit to prevent DoS
+    if len(json_files) > MAX_FILES_TO_PROCESS:
+        raise ValueError(
+            f"Too many JSON files to process: {len(json_files)} "
+            f"(maximum: {MAX_FILES_TO_PROCESS}). "
+            "Please reduce the number of files or increase the limit."
+        )
+    
     if not json_files:
         raise ValueError(f"No JSON files found in {results_path}")
     
@@ -82,7 +124,10 @@ def calculate_scores(task_name: str, hardware: str, results_dir: str = "results"
     
     for json_file in json_files:
         try:
-            with open(json_file, 'r') as f:
+            # Validate JSON file size before loading
+            validate_json_file_size(json_file)
+            
+            with open(json_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             
             # Validate required fields
@@ -107,7 +152,9 @@ def calculate_scores(task_name: str, hardware: str, results_dir: str = "results"
             
             models.append(model_data)
             
-        except (json.JSONDecodeError, KeyError) as e:
+        except (ValueError, json.JSONDecodeError, KeyError, OSError) as e:
+            # ValueError from file size validation, JSONDecodeError from malformed JSON,
+            # KeyError from missing required fields, OSError from file read errors
             warnings.warn(f"Skipping invalid JSON file {json_file.name}: {e}")
             invalid_files.append(json_file.name)
             continue
@@ -125,6 +172,10 @@ def calculate_scores(task_name: str, hardware: str, results_dir: str = "results"
     
     # Calculate star ratings using quintiles
     num_models = len(models)
+    
+    # Explicit check for zero models (should never happen due to earlier validation)
+    if num_models == 0:
+        raise ValueError("Cannot calculate scores with zero models")
     
     # Handle edge cases for small numbers of models
     if num_models < 5:

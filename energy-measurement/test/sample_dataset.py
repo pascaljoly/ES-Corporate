@@ -11,11 +11,17 @@ import random
 import itertools
 from typing import Any, Iterable, List
 
+# Memory safety limits
+MAX_DATASET_SIZE_TO_LOAD = 100000  # Maximum items to load into memory
+DEFAULT_MAX_LOAD_MULTIPLIER = 10  # Multiply num_samples by this for max load
+MIN_LOAD_SIZE = 1000  # Minimum items to load even if num_samples is small
+
 
 def sample_dataset(
     dataset: Iterable[Any],
     num_samples: int = 1000,
-    seed: int = 42
+    seed: int = 42,
+    max_dataset_size: int = MAX_DATASET_SIZE_TO_LOAD
 ) -> List[Any]:
     """
     Sample dataset with reproducible randomness for fair model comparisons.
@@ -31,13 +37,16 @@ def sample_dataset(
         dataset: Any iterable (list, HuggingFace dataset, generator, etc.)
         num_samples: Number of samples to extract (default 1000, but fully customizable)
         seed: Random seed for reproducibility (default 42)
+        max_dataset_size: Maximum number of items to load into memory (default: 100,000)
+                          This prevents memory exhaustion with very large datasets
         
     Returns:
         List of sampled items from dataset
         
     Raises:
-        ValueError: If dataset is empty or num_samples is not positive
+        ValueError: If dataset is empty, num_samples is not positive, or exceeds limits
         TypeError: If dataset is not iterable
+        MemoryError: If dataset is too large to safely load into memory
         
     Examples:
         >>> # Small dataset - use fewer samples
@@ -59,17 +68,34 @@ def sample_dataset(
     if num_samples <= 0:
         raise ValueError("num_samples must be positive")
     
+    if num_samples > max_dataset_size:
+        raise ValueError(
+            f"num_samples ({num_samples}) exceeds maximum dataset size limit "
+            f"({max_dataset_size}). This prevents memory exhaustion. "
+            "Consider using a smaller sample size or streaming sampling."
+        )
+    
     # Check if dataset is iterable
     try:
         iter(dataset)
     except TypeError:
         raise TypeError(f"Dataset must be iterable, got {type(dataset).__name__}")
     
-    # Convert dataset to list (handle generators, iterators, etc.)
+    # Convert dataset to list with memory limits (handle generators, iterators, etc.)
     try:
-        # For large datasets, limit initial loading to avoid memory issues
-        max_samples = max(num_samples * 10, 10000)
-        dataset_list = list(itertools.islice(dataset, max_samples))
+        # Calculate safe limit: load enough to get good samples, but cap at max_dataset_size
+        # Load more than num_samples to ensure we have enough variety
+        max_samples_to_load = min(
+            max(num_samples * DEFAULT_MAX_LOAD_MULTIPLIER, MIN_LOAD_SIZE),
+            max_dataset_size
+        )
+        
+        dataset_list = list(itertools.islice(dataset, max_samples_to_load))
+    except MemoryError:
+        raise MemoryError(
+            f"Insufficient memory to load dataset (tried to load up to {max_samples_to_load} items). "
+            f"Try reducing num_samples (current: {num_samples}) or max_dataset_size (current: {max_dataset_size})."
+        )
     except Exception as e:
         raise TypeError(f"Could not iterate over dataset: {e}")
     
@@ -82,11 +108,11 @@ def sample_dataset(
         print(f"Warning: Dataset has only {len(dataset_list)} samples, using all of them (requested {num_samples})")
         return dataset_list
     
-    # Set random seed for reproducibility
-    random.seed(seed)
+    # Use local Random instance instead of global random state for thread safety
+    rng = random.Random(seed)
     
     # Sample without replacement (no duplicates)
-    sampled = random.sample(dataset_list, num_samples)
+    sampled = rng.sample(dataset_list, num_samples)
     
     # Print summary
     print(f"Sampled {num_samples} from {len(dataset_list)} samples (seed={seed})")
@@ -97,7 +123,8 @@ def sample_dataset(
 def sample_dataset_with_replacement(
     dataset: Iterable[Any],
     num_samples: int = 1000,
-    seed: int = 42
+    seed: int = 42,
+    max_dataset_size: int = MAX_DATASET_SIZE_TO_LOAD
 ) -> List[Any]:
     """
     Sample dataset with replacement (allows duplicates) for specific use cases.
@@ -109,29 +136,46 @@ def sample_dataset_with_replacement(
         dataset: Any iterable
         num_samples: Number of samples to extract
         seed: Random seed for reproducibility
+        max_dataset_size: Maximum number of items to load into memory (default: 100,000)
         
     Returns:
         List of sampled items (may contain duplicates)
+        
+    Raises:
+        ValueError: If dataset is empty, num_samples is not positive, or exceeds limits
+        TypeError: If dataset is not iterable
+        MemoryError: If dataset is too large to safely load into memory
     """
     
     # Validate inputs
     if num_samples <= 0:
         raise ValueError("num_samples must be positive")
     
-    # Convert dataset to list
+    if num_samples > max_dataset_size:
+        raise ValueError(
+            f"num_samples ({num_samples}) exceeds maximum dataset size limit "
+            f"({max_dataset_size}). This prevents memory exhaustion."
+        )
+    
+    # Convert dataset to list with memory limits
     try:
-        dataset_list = list(dataset)
+        dataset_list = list(itertools.islice(dataset, max_dataset_size))
+    except MemoryError:
+        raise MemoryError(
+            f"Insufficient memory to load dataset (tried to load up to {max_dataset_size} items). "
+            f"Try reducing num_samples (current: {num_samples}) or max_dataset_size (current: {max_dataset_size})."
+        )
     except Exception as e:
         raise TypeError(f"Could not iterate over dataset: {e}")
     
     if not dataset_list:
         raise ValueError("Dataset is empty")
     
-    # Set random seed
-    random.seed(seed)
+    # Use local Random instance instead of global random state for thread safety
+    rng = random.Random(seed)
     
     # Sample with replacement
-    sampled = [random.choice(dataset_list) for _ in range(num_samples)]
+    sampled = [rng.choice(dataset_list) for _ in range(num_samples)]
     
     print(f"Sampled {num_samples} with replacement from {len(dataset_list)} samples (seed={seed})")
     
