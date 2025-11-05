@@ -63,7 +63,7 @@ def main():
         print(f"Hardware: {results['hardware']}")
         print(f"Samples processed: {results['num_samples']}")
         print(f"Energy consumed: {results['energy_kwh']:.6f} kWh")
-        print(f"CO2 emissions: {results['co2_kg']:.6f} kg")
+        # Note: CO2 emissions removed - requires carbon intensity configuration
         print(f"Duration: {results['duration_seconds']:.2f} seconds")
         print(f"Avg per sample: {results['duration_seconds']/results['num_samples']*1000:.2f} ms")
         print(f"Per 1000 queries: {results['kwh_per_1000_queries']:.6f} kWh")

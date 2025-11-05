@@ -158,22 +158,19 @@ def measure_energy(
     # Extract results
     duration_seconds = end_time - start_time
     
-    # Get energy and CO2 from tracker
+    # Get energy from tracker (CO2 calculation removed as it requires carbon intensity configuration)
     try:
         # Try to get energy from the tracker's final emissions data
         if hasattr(tracker, 'final_emissions_data') and tracker.final_emissions_data:
             emissions_data = tracker.final_emissions_data
             energy_kwh = getattr(emissions_data, 'energy_consumed', 0.0)
-            co2_kg = getattr(emissions_data, 'emissions', 0.0)
         else:
             # Fallback to direct attributes
             energy_kwh = getattr(tracker, 'energy_consumed', 0.0)
-            co2_kg = getattr(tracker, 'emissions', 0.0)
     except (AttributeError, KeyError) as e:
         # Expected errors from tracker - log warning but continue
         warnings.warn(f"Could not extract energy data from tracker: {e}. Using default values.")
         energy_kwh = 0.0
-        co2_kg = 0.0
     except Exception as e:
         # Unexpected errors - re-raise with context
         raise RuntimeError(
@@ -192,7 +189,6 @@ def measure_energy(
         "num_samples": actual_samples,  # Actual samples processed
         "seed": seed,  # Record the seed used
         "energy_kwh": round(energy_kwh, 6),
-        "co2_kg": round(co2_kg, 6),
         "duration_seconds": round(duration_seconds, 2),
         "kwh_per_1000_queries": round(kwh_per_1000_queries, 6)
     }
@@ -202,7 +198,6 @@ def measure_energy(
     
     print(f"✅ Measurement complete!")
     print(f"   Energy: {energy_kwh:.4f} kWh")
-    print(f"   CO2: {co2_kg:.4f} kg")
     print(f"   Duration: {duration_seconds:.1f} seconds")
     print(f"   kWh per 1000 queries: {kwh_per_1000_queries:.4f}")
     

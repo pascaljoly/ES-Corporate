@@ -62,7 +62,7 @@ def test_energy_measurement():
         # Verify results structure
         required_keys = [
             "model_name", "task_name", "hardware", "timestamp",
-            "num_samples", "energy_kwh", "co2_kg", "duration_seconds",
+            "num_samples", "energy_kwh", "duration_seconds",
             "kwh_per_1000_queries"
         ]
         

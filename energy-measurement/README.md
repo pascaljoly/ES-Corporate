@@ -84,7 +84,7 @@ Measure energy consumption of a model.
 - **`output_dir`**: Directory where JSON results will be saved
 
 **Returns:**
-- `dict`: Measurement results with energy, CO2, and timing data
+- `dict`: Measurement results with energy and timing data
 
 **Return Value Structure:**
 ```json
@@ -96,7 +96,6 @@ Measure energy consumption of a model.
   "num_samples": 100,
   "seed": 42,
   "energy_kwh": 0.000008,
-  "co2_kg": 0.000002,
   "duration_seconds": 3.16,
   "kwh_per_1000_queries": 0.000084
 }
@@ -209,7 +208,6 @@ results/
   "timestamp": "2024-01-15T10:30:45.123456",
   "num_samples": 1000,
   "energy_kwh": 0.042,
-  "co2_kg": 0.018,
   "duration_seconds": 125.3,
   "kwh_per_1000_queries": 0.042
 }
