@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Callable, Iterable, Any
 from codecarbon import EmissionsTracker
 from test.sample_dataset import sample_dataset
-from security_utils import (
+from utils.security_utils import (
     sanitize_path_component,
     validate_input_length,
     sanitize_and_validate_path

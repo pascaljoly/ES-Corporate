@@ -16,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 print("Testing imports...")
 
 # Test security_utils (no dependencies)
-from security_utils import (
+from utils.security_utils import (
     sanitize_path_component,
     validate_input_length,
     validate_json_file_size,
@@ -350,7 +350,7 @@ def test_calculate_scores_with_mock(results):
         with tempfile.TemporaryDirectory() as tmpdir:
             # Create test results directory - need to use sanitized paths
             from datetime import datetime
-            from security_utils import sanitize_and_validate_path
+            from utils.security_utils import sanitize_and_validate_path
             
             # Create directory structure manually to match what calculate_scores expects
             # calculate_scores will sanitize "test-task" and "CPU" internally

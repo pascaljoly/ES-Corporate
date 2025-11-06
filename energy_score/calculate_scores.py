@@ -11,7 +11,7 @@ import warnings
 from pathlib import Path
 from typing import Dict, List, Any
 from datetime import datetime
-from security_utils import (
+from utils.security_utils import (
     sanitize_path_component,
     validate_input_length,
     sanitize_and_validate_path,

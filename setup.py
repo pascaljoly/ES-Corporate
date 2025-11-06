@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 setup(
     name="ml-energy-score",
     version="0.1.0",
-    packages=find_packages(),
+    packages=find_packages(exclude=["*.test", "*.test.*", "test.*", "test", "archive", "archive.*"]),
     install_requires=[
         "codecarbon>=2.4.0",
         "numpy>=1.20.0",
