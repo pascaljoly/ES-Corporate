@@ -1,17 +1,26 @@
-# Energy Measurement Tool (EStool)
+# ML Energy Score
 
 A simple and efficient Python toolkit for measuring and scoring ML model energy consumption using CodeCarbon.
 
-Inspired by the Hugging Face Energy Score methodology: https://huggingface.github.io/AIEnergyScore/#documentation
-Extending to internal corporate models and use cases.
-Scoring tool compares models for similar use cases and hardware.
+## Overview
 
-## Purpose
-Help AI engineers make informed decisions about model selection based on 
-energy efficiency, supporting sustainable AI practices.
+ML Energy Score provides:
+- Energy consumption measurement for any ML model
+- Star-based efficiency scoring to compare models
+- Support for multiple hardware platforms (CPU, GPU, Apple Silicon)
+- Integration with CodeCarbon for accurate energy tracking
+- JSON-formatted results for easy analysis
 
-## Usage
-This tool is used by sustainability consultants to measure client models
+## Motivation
+
+As AI models grow in size and complexity, their energy consumption and environmental impact increase significantly. ML Energy Score helps organizations make informed decisions about model selection by quantifying energy efficiency, enabling:
+
+- **Sustainable AI Development**: Choose models that minimize environmental impact
+- **Cost Optimization**: Reduce energy costs in production deployments
+- **Transparency**: Provide clear metrics for AI sustainability reporting
+- **Informed Decision-Making**: Balance model performance with energy efficiency
+
+This tool empowers AI engineers and sustainability professionals to build more sustainable AI systems without sacrificing functionality.
 
 ## 🚀 Quick Start
 
@@ -194,10 +203,20 @@ This is a focused energy measurement toolkit. For contributions, please ensure:
 3. New features include comprehensive tests
 4. Documentation is updated
 
+## Author
+
+**Pascal Joly**
+Sustainability Consulting
+IT Climate Ed, LLC
+
+## Acknowledgments
+
+This project is inspired by and builds upon:
+- **[Hugging Face AI Energy Score](https://huggingface.github.io/AIEnergyScore/)**: Methodology for measuring and comparing ML model energy consumption
+- **[CodeCarbon](https://codecarbon.io/)**: Python library for tracking carbon emissions from computing
+
 ---
 
-**Created**: October 25, 2025  
-**Focus**: Simple, efficient energy measurement for ML models
-**Developed by:** Pascal Joly/IT Climate Ed, LLC
+**Created**: October 25, 2025
 **License:** MIT
-**Status:** Open source tool used in sustainability consulting
+**Status:** Open source tool for sustainable AI development
