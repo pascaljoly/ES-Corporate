@@ -25,35 +25,54 @@ This tool empowers AI engineers and sustainability professionals to build more s
 ## 🚀 Quick Start
 
 ```bash
-# Install dependencies
+# Install from GitHub
+pip install git+https://github.com/pascaljoly/ml-energy-score.git
+
+# Or install dependencies locally
 pip install -r requirements.txt
 
 # Measure energy consumption of a model
-python energy-measurement/measure_energy.py
+python energy_measurement/measure_energy.py
 
 # Test the measurement function
-python energy-measurement/test/test_dummy.py
-python energy-measurement/test/test_pytorch.py
+python energy_measurement/test/test_dummy.py
+python energy_measurement/test/test_pytorch.py
 
 # Calculate energy efficiency scores
-python energy-measurement/calculate_scores.py
+python energy_score/calculate_scores.py
 ```
 
 ## 📁 Project Structure
 
 ```
-EStool/
-├── energy-measurement/          # Core energy measurement functionality
+ml-energy-score/
+├── utils/                       # Shared utilities
+│   ├── __init__.py
+│   └── security_utils.py        # Security and validation utilities
+│
+├── energy_measurement/          # Energy measurement package
+│   ├── __init__.py
 │   ├── measure_energy.py        # Main measurement function
-│   ├── calculate_scores.py      # Energy scoring with star ratings
-│   ├── test/                    # Test files and utilities
-│   │   ├── test_dummy.py       # Test with dummy model
-│   │   ├── test_pytorch.py     # Test with real PyTorch model
-│   │   ├── test_scoring.py     # Test scoring functionality
-│   │   └── sample_dataset.py   # Dataset sampling utilities
-│   └── README.md               # Detailed documentation
+│   ├── example_usage.py         # Usage examples
+│   ├── test/                    # Measurement tests
+│   │   ├── __init__.py
+│   │   ├── test_dummy.py        # Test with dummy model
+│   │   ├── test_pytorch.py      # Test with real PyTorch model
+│   │   └── sample_dataset.py    # Dataset sampling utilities
+│   └── README.md                # Detailed measurement documentation
+│
+├── energy_score/                # Energy scoring package
+│   ├── __init__.py
+│   ├── calculate_scores.py      # Star rating calculation
+│   └── test/                    # Scoring tests
+│       ├── __init__.py
+│       └── test_scoring.py      # Test scoring functionality
+│
 ├── archive/                     # Archived older functionality
-└── README.md                   # This file
+├── setup.py                     # Package installation configuration
+├── requirements.txt             # Core dependencies
+├── LICENSE                      # MIT License
+└── README.md                    # This file
 ```
 
 ## 🔧 Core Features
@@ -94,7 +113,7 @@ print(f"Energy: {results['kwh_per_1000_queries']:.4f} kWh/1k queries")
 Calculate star ratings for energy efficiency:
 
 ```python
-from energy_measurement.calculate_scores import calculate_scores, print_scores
+from energy_score.calculate_scores import calculate_scores, print_scores
 
 # Calculate scores for all models in a task
 scores = calculate_scores('image-classification', 'CPU')
@@ -112,17 +131,17 @@ print_scores(scores)
 
 ### Dummy Model Test (No Dependencies)
 ```bash
-python energy-measurement/test/test_dummy.py
+python energy_measurement/test/test_dummy.py
 ```
 
 ### PyTorch Model Test (Real Neural Network)
 ```bash
-python energy-measurement/test/test_pytorch.py
+python energy_measurement/test/test_pytorch.py
 ```
 
 ### Scoring Function Test
 ```bash
-python energy-measurement/test/test_scoring.py
+python energy_score/test/test_scoring.py
 ```
 
 ## 📊 Example Results
@@ -172,16 +191,16 @@ Results are saved as JSON files:
 
 ## 🔧 Requirements
 
-- Python 3.7+
-- CodeCarbon >= 3.0.0
-- PyTorch >= 1.9.0 (for PyTorch tests)
-- NumPy >= 1.21.0
+- Python 3.8+
+- CodeCarbon >= 2.4.0
+- NumPy >= 1.20.0
+- PyTorch >= 1.9.0 (optional, for PyTorch tests)
 
 ## 📚 Documentation
 
-- **Main Documentation**: `energy-measurement/README.md`
+- **Main Documentation**: `energy_measurement/README.md`
 - **API Reference**: See docstrings in source files
-- **Examples**: `energy-measurement/example_usage.py`
+- **Examples**: `energy_measurement/example_usage.py`
 
 ## 🗂️ Archive
 
