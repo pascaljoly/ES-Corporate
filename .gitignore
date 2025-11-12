@@ -93,6 +93,7 @@ models/
 
 # Results and outputs
 results/
+scores/
 output/
 demo_results/
 my_test_results/

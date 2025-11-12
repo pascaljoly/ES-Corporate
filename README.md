@@ -69,6 +69,13 @@ ml-energy-score/
 │       └── test_scoring.py      # Test scoring functionality
 │
 ├── archive/                     # Archived older functionality
+├── results/                     # Energy measurement results (generated)
+│   └── {task_name}/
+│       └── {hardware}/
+│           └── {model}_{timestamp}.json
+├── scores/                      # Energy scoring results (generated)
+│   └── {task_name}/
+│       └── {task}_{hardware}_{timestamp}.json
 ├── setup.py                     # Package installation configuration
 ├── requirements.txt             # Core dependencies
 ├── LICENSE                      # MIT License
@@ -115,10 +122,22 @@ Calculate star ratings for energy efficiency:
 ```python
 from energy_score.calculate_scores import calculate_scores, print_scores
 
-# Calculate scores for all models in a task
+# Calculate scores and display
 scores = calculate_scores('image-classification', 'CPU')
 print_scores(scores)
+
+# Calculate scores and save to file (recommended)
+scores = calculate_scores('image-classification', 'CPU', output_dir='scores')
+# Saves to: scores/image-classification/image-classification_CPU_20250111_143022.json
+print_scores(scores)
 ```
+
+**Features:**
+- ✅ **Star Rating System**: Quintile-based scoring (5 stars = top 20%, 1 star = bottom 20%)
+- ✅ **Auto-Save Results**: Optional output_dir parameter saves scores to timestamped JSON files
+- ✅ **Organized Storage**: Files organized by task name with hardware and timestamp in filename
+- ✅ **Percentile Rankings**: Each model gets a percentile ranking (0-100, lower is better)
+- ✅ **Energy Statistics**: Min, max, and median energy consumption for the task
 
 **Star Rating System:**
 - ⭐⭐⭐⭐⭐ **5 stars**: Top 20% (most efficient)
@@ -126,6 +145,25 @@ print_scores(scores)
 - ⭐⭐⭐☆☆ **3 stars**: Middle 20%
 - ⭐⭐☆☆☆ **2 stars**: Next 20%
 - ⭐☆☆☆☆ **1 star**: Bottom 20% (least efficient)
+
+**Saved Score Format:**
+```json
+{
+  "task_name": "image-classification",
+  "hardware": "CPU",
+  "num_models": 10,
+  "models": [
+    {
+      "model_name": "efficientnet-b0",
+      "star_rating": 5,
+      "kwh_per_1000_queries": 0.0250,
+      "percentile": 0
+    }
+  ],
+  "energy_range": {"min": 0.0250, "max": 0.1850, "median": 0.0680},
+  "score_timestamp": "2025-01-11T14:30:22.123456"
+}
+```
 
 ## 🧪 Testing
 
