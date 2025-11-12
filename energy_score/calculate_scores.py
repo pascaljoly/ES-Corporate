@@ -20,7 +20,7 @@ from utils.security_utils import (
 )
 
 
-def calculate_scores(task_name: str, hardware: str, results_dir: str = "results") -> dict:
+def calculate_scores(task_name: str, hardware: str, results_dir: str = "results", output_dir: str = None) -> dict:
     """
     Calculate energy star ratings for all models in a task + hardware category.
     
@@ -32,6 +32,8 @@ def calculate_scores(task_name: str, hardware: str, results_dir: str = "results"
         task_name: Task name (e.g., "image-classification", "text-generation")
         hardware: Hardware type (e.g., "T4", "CPU", "A100")
         results_dir: Directory containing measurement results (default: "results")
+        output_dir: Directory to save score results (optional). If provided, scores will be
+                   automatically saved to a JSON file with timestamp and category info
         
     Returns:
         Dictionary containing:
@@ -64,8 +66,15 @@ def calculate_scores(task_name: str, hardware: str, results_dir: str = "results"
         FileNotFoundError: If the results directory doesn't exist
         
     Example:
+        >>> # Calculate scores without saving
         >>> scores = calculate_scores("image-classification", "CPU")
         >>> print(f"Found {scores['num_models']} models")
+        >>>
+        >>> # Calculate and auto-save to file
+        >>> scores = calculate_scores("image-classification", "CPU", output_dir="scores")
+        >>> # Creates: scores/image-classification/image-classification_CPU_20250111_143022.json
+        >>>
+        >>> # Print results
         >>> for model in scores['models']:
         ...     stars = "⭐" * model['star_rating'] + "☆" * (5 - model['star_rating'])
         ...     print(f"{stars} {model['model_name']}: {model['kwh_per_1000_queries']:.4f} kWh")
@@ -205,9 +214,9 @@ def calculate_scores(task_name: str, hardware: str, results_dir: str = "results"
     
     # Sort models by star rating (descending) then by energy (ascending)
     models.sort(key=lambda x: (-x['star_rating'], x['kwh_per_1000_queries']))
-    
-    # Return results
-    return {
+
+    # Prepare results
+    results = {
         'task_name': task_name,
         'hardware': hardware,
         'num_models': num_models,
@@ -216,11 +225,63 @@ def calculate_scores(task_name: str, hardware: str, results_dir: str = "results"
         'invalid_files': invalid_files
     }
 
+    # Save to file if output directory is specified
+    if output_dir is not None:
+        save_scores(results, output_dir)
+
+    return results
+
+
+def save_scores(scores: dict, output_dir: str = "scores") -> None:
+    """
+    Save scoring results to JSON file with timestamp and category.
+
+    Args:
+        scores: Results from calculate_scores()
+        output_dir: Base output directory (default: "scores")
+
+    Raises:
+        ValueError: If path components are invalid
+        OSError: If file cannot be written
+    """
+    # Sanitize and validate paths
+    sanitized_output_dir = sanitize_path_component(output_dir, max_length=500)
+    sanitized_task_name = sanitize_path_component(scores["task_name"])
+    sanitized_hardware = sanitize_path_component(scores["hardware"])
+
+    # Create safe directory path
+    task_dir = sanitize_and_validate_path(sanitized_output_dir, sanitized_task_name, create=True)
+
+    # Create filename with timestamp, task, and hardware
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"{sanitized_task_name}_{sanitized_hardware}_{timestamp}.json"
+
+    # Validate filename doesn't contain unsafe characters
+    if any(char in filename for char in ['/', '\\', '..', '<', '>', ':', '"', '|', '?', '*']):
+        raise ValueError(f"Generated filename contains unsafe characters: {filename}")
+
+    filepath = task_dir / filename
+
+    # Add timestamp to scores data
+    scores_with_timestamp = {
+        **scores,
+        'score_timestamp': datetime.now().isoformat()
+    }
+
+    # Save JSON
+    try:
+        with open(filepath, 'w') as f:
+            json.dump(scores_with_timestamp, f, indent=2)
+    except OSError as e:
+        raise OSError(f"Failed to write scores file {filepath}: {e}") from e
+
+    print(f"📁 Scores saved to: {filepath}")
+
 
 def print_scores(scores: dict) -> None:
     """
     Print formatted energy scores to console.
-    
+
     Args:
         scores: Results from calculate_scores()
     """
@@ -228,10 +289,10 @@ def print_scores(scores: dict) -> None:
     print(f"Models evaluated: {scores['num_models']}")
     print(f"\nEnergy range: {scores['energy_range']['min']:.4f} - {scores['energy_range']['max']:.4f} kWh")
     print(f"Median: {scores['energy_range']['median']:.4f} kWh")
-    
+
     if scores['invalid_files']:
         print(f"\n⚠️  Skipped {len(scores['invalid_files'])} invalid files")
-    
+
     print("\nModel Rankings:")
     for model in scores['models']:
         stars = "⭐" * model['star_rating'] + "☆" * (5 - model['star_rating'])
@@ -241,7 +302,8 @@ def print_scores(scores: dict) -> None:
 if __name__ == "__main__":
     # Example usage
     try:
-        scores = calculate_scores("test-classification", "CPU")
+        # Calculate scores and save to file
+        scores = calculate_scores("test-classification", "CPU", output_dir="scores")
         print_scores(scores)
     except (ValueError, FileNotFoundError) as e:
         print(f"Error: {e}")
