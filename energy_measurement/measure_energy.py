@@ -242,26 +242,3 @@ def save_results(results: dict, output_dir: str) -> None:
         raise OSError(f"Failed to write results file {filepath}: {e}") from e
     
     print(f"📁 Results saved to: {filepath}")
-
-
-if __name__ == "__main__":
-    # Example usage
-    def dummy_inference(sample):
-        """Dummy inference function for testing."""
-        time.sleep(0.01)  # Simulate processing
-        return sample
-    
-    # Create dummy dataset
-    dummy_dataset = [{"text": f"Sample {i}"} for i in range(100)]
-    
-    # Measure energy
-    results = measure_energy(
-        inference_fn=dummy_inference,
-        dataset=dummy_dataset,
-        model_name="dummy_model",
-        task_name="text-classification",
-        hardware="CPU",
-        num_samples=50
-    )
-    
-    print(f"\nResults: {json.dumps(results, indent=2)}")
