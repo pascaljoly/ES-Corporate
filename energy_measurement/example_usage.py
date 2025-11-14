@@ -1,206 +1,202 @@
 #!/usr/bin/env python3
 """
-Example usage of the energy measurement script with a simple PyTorch model.
+HOW TO USE THE ENERGY MEASUREMENT TOOL
+=======================================
+
+This example shows you how to measure the energy consumption of YOUR ML model.
+
+Follow these steps:
+1. Create your inference function (the function that runs your model)
+2. Prepare your dataset
+3. Call measure_energy() with your function and data
+4. Review the results
+
+That's it! The tool handles all the energy tracking automatically.
 """
 
-import torch
-import torch.nn as nn
-import time
-from pathlib import Path
-import sys
-
-# Add current directory to path
-sys.path.append(str(Path(__file__).parent))
-
-from measure_energy import measure_energy
+from energy_measurement.measure_energy import measure_energy
 
 
-class SimpleModel(nn.Module):
-    """A simple neural network for demonstration."""
-    
-    def __init__(self, input_size=10, hidden_size=64, output_size=3):
-        super().__init__()
-        self.layers = nn.Sequential(
-            nn.Linear(input_size, hidden_size),
-            nn.ReLU(),
-            nn.Linear(hidden_size, hidden_size),
-            nn.ReLU(),
-            nn.Linear(hidden_size, output_size),
-            nn.Softmax(dim=1)
-        )
-    
-    def forward(self, x):
-        return self.layers(x)
+# =============================================================================
+# STEP 1: CREATE YOUR INFERENCE FUNCTION
+# =============================================================================
+# This is the function that runs your model on a single sample.
+# It should take one sample from your dataset and return a prediction.
+
+def my_model_inference(sample):
+    """
+    Your inference function - this is where YOUR model runs.
+
+    Args:
+        sample: One item from your dataset (can be dict, list, tensor, etc.)
+
+    Returns:
+        Your model's prediction (any format)
+
+    HOW TO ADAPT THIS FOR YOUR MODEL:
+    1. Load your model (do this outside the function if possible)
+    2. Preprocess the sample if needed
+    3. Run inference
+    4. Return the result
+    """
+    # Example: Simple text processing
+    # REPLACE THIS with your actual model inference code
+
+    text = sample.get('text', '')
+
+    # Your model inference goes here
+    # For example:
+    # - prediction = your_model(text)
+    # - prediction = your_transformer(text)
+    # - prediction = your_api_call(text)
+
+    # For this example, we'll simulate a simple prediction
+    prediction = len(text) % 3  # Dummy prediction
+
+    return {'prediction': prediction, 'confidence': 0.85}
 
 
-def create_model():
-    """Create and return a simple model."""
-    model = SimpleModel()
-    model.eval()  # Set to evaluation mode
-    return model
+# =============================================================================
+# STEP 2: PREPARE YOUR DATASET
+# =============================================================================
+# Your dataset should be a list or iterable of samples.
+# Each sample will be passed to your inference function.
 
+def create_my_dataset():
+    """
+    Create or load your dataset.
 
-def pytorch_inference(sample):
-    """Inference function for PyTorch model."""
-    # Convert sample to tensor
-    if isinstance(sample, dict):
-        # Assume sample has 'features' key
-        input_tensor = torch.tensor(sample['features'], dtype=torch.float32).unsqueeze(0)
-    else:
-        # Assume sample is already a list/array
-        input_tensor = torch.tensor(sample, dtype=torch.float32).unsqueeze(0)
-    
-    # Run inference
-    with torch.no_grad():
-        output = model(input_tensor)
-    
-    return output
+    Returns:
+        List of samples (each sample should match what your inference function expects)
 
+    HOW TO ADAPT THIS FOR YOUR DATA:
+    - Load from file: pd.read_csv(), json.load(), etc.
+    - Load from HuggingFace: datasets.load_dataset()
+    - Use existing list/array
+    - Query from database
+    """
+    # Example: Simple text dataset
+    # REPLACE THIS with your actual data loading code
 
-def create_dummy_dataset(num_samples=100):
-    """Create a dummy dataset for testing."""
-    dataset = []
-    for i in range(num_samples):
-        # Create random features
-        features = [float(j) for j in range(10)]  # 10 features
-        dataset.append({
-            'features': features,
-            'label': i % 3,
-            'id': i
-        })
+    dataset = [
+        {'text': 'This is a sample text for classification', 'label': 0},
+        {'text': 'Another example of text data', 'label': 1},
+        {'text': 'Energy measurement is important for AI', 'label': 2},
+        # ... add more samples
+    ]
+
+    # For demonstration, create 100 samples
+    dataset = [
+        {'text': f'Sample text number {i} for testing', 'label': i % 3}
+        for i in range(100)
+    ]
+
     return dataset
 
 
-def example_text_classification():
-    """Example with text classification task."""
-    print("=== Text Classification Example ===")
-    
-    # Create dummy text dataset
-    text_dataset = [
-        {
-            'text': f"This is sample text {i} for classification",
-            'label': i % 3,
-            'id': i
-        }
-        for i in range(100)
-    ]
-    
-    def text_inference(sample):
-        """Simple text processing inference."""
-        # Simulate text processing
-        text = sample['text']
-        # Simulate some computation
-        time.sleep(0.001)
-        return {'prediction': len(text) % 3, 'confidence': 0.8}
-    
-    print("Measuring energy for text classification...")
-    
-    results = measure_energy(
-        inference_fn=text_inference,
-        dataset=text_dataset,
-        model_name="text_classifier_v1",
-        task_name="text-classification",
-        hardware="CPU",
-        num_samples=50,
-        output_dir="example_results"
-    )
-    
-    print(f"Text classification results: {results}")
-    return results
-
-
-def example_pytorch_model():
-    """Example with PyTorch model."""
-    print("\n=== PyTorch Model Example ===")
-    
-    global model
-    model = create_model()
-    
-    # Create dummy dataset
-    dataset = create_dummy_dataset(100)
-    
-    print("Measuring energy for PyTorch model...")
-    
-    results = measure_energy(
-        inference_fn=pytorch_inference,
-        dataset=dataset,
-        model_name="simple_nn_v1",
-        task_name="image-classification",
-        hardware="CPU",
-        num_samples=30,
-        output_dir="example_results"
-    )
-    
-    print(f"PyTorch model results: {results}")
-    return results
-
-
-def example_computer_vision():
-    """Example with computer vision task."""
-    print("\n=== Computer Vision Example ===")
-    
-    def cv_inference(sample):
-        """Computer vision inference function."""
-        # Simulate image processing
-        image_data = sample['image_data']
-        # Simulate some computation
-        time.sleep(0.002)
-        return {
-            'predictions': [0.7, 0.2, 0.1],
-            'bboxes': [[10, 20, 30, 40], [50, 60, 70, 80]]
-        }
-    
-    # Create dummy image dataset
-    cv_dataset = [
-        {
-            'image_data': [0.1] * 224 * 224 * 3,  # Simulate RGB image
-            'image_id': i,
-            'annotations': []
-        }
-        for i in range(50)
-    ]
-    
-    print("Measuring energy for computer vision model...")
-    
-    results = measure_energy(
-        inference_fn=cv_inference,
-        dataset=cv_dataset,
-        model_name="yolo_v8n",
-        task_name="object-detection",
-        hardware="CPU",
-        num_samples=20,
-        output_dir="example_results"
-    )
-    
-    print(f"Computer vision results: {results}")
-    return results
-
+# =============================================================================
+# STEP 3: MEASURE ENERGY CONSUMPTION
+# =============================================================================
 
 def main():
-    """Run example usage scenarios."""
-    print("🚀 Energy Measurement Examples")
-    print("=" * 50)
-    
-    try:
-        # Run examples
-        text_results = example_text_classification()
-        pytorch_results = example_pytorch_model()
-        cv_results = example_computer_vision()
-        
-        print("\n" + "=" * 50)
-        print("📊 Summary of Results:")
-        print(f"Text Classification: {text_results['kwh_per_1000_queries']:.4f} kWh/1k queries")
-        print(f"PyTorch Model: {pytorch_results['kwh_per_1000_queries']:.4f} kWh/1k queries")
-        print(f"Computer Vision: {cv_results['kwh_per_1000_queries']:.4f} kWh/1k queries")
-        
-        print("\n✅ All examples completed successfully!")
-        print("📁 Check the 'example_results' directory for saved JSON files")
-        
-    except Exception as e:
-        print(f"❌ Example failed: {e}")
-        import traceback
-        traceback.print_exc()
+    """
+    Main function - this is where you measure energy consumption.
+    """
 
+    print("=" * 70)
+    print("ENERGY MEASUREMENT EXAMPLE")
+    print("=" * 70)
+    print()
+    print("This example shows you how to measure YOUR model's energy consumption.")
+    print()
+
+    # Load your dataset
+    print("Step 1: Loading dataset...")
+    dataset = create_my_dataset()
+    print(f"✓ Loaded {len(dataset)} samples")
+    print()
+
+    # Measure energy consumption
+    print("Step 2: Measuring energy consumption...")
+    print("(This will run your model on the samples and track energy usage)")
+    print()
+
+    results = measure_energy(
+        # Your inference function
+        inference_fn=my_model_inference,
+
+        # Your dataset
+        dataset=dataset,
+
+        # Model identification
+        model_name="my_text_classifier_v1",  # Change this to your model name
+        task_name="text-classification",      # e.g., "image-classification", "object-detection", etc.
+        hardware="CPU",                        # Options: "CPU", "T4", "V100", "A100", "H100"
+
+        # How many samples to measure (use smaller number for quick tests)
+        num_samples=50,  # Increase to 1000+ for production measurements
+
+        # Random seed (use same seed to compare different models fairly)
+        seed=42,
+
+        # Where to save results
+        output_dir="results"  # Results saved to: results/{task_name}/{hardware}/
+    )
+
+    print()
+    print("=" * 70)
+    print("RESULTS")
+    print("=" * 70)
+    print()
+    print(f"Model: {results['model_name']}")
+    print(f"Task: {results['task_name']}")
+    print(f"Hardware: {results['hardware']}")
+    print(f"Samples measured: {results['num_samples']}")
+    print()
+    print(f"✓ Energy consumed: {results['energy_kwh']:.6f} kWh")
+    print(f"✓ Duration: {results['duration_seconds']:.2f} seconds")
+    print(f"✓ Energy per 1000 queries: {results['kwh_per_1000_queries']:.6f} kWh")
+    print()
+    print("📁 Full results saved to JSON file")
+    print()
+    print("=" * 70)
+    print("NEXT STEPS")
+    print("=" * 70)
+    print()
+    print("1. CUSTOMIZE THIS EXAMPLE:")
+    print("   - Replace my_model_inference() with your actual model")
+    print("   - Replace create_my_dataset() with your actual data")
+    print("   - Update model_name, task_name, and hardware")
+    print()
+    print("2. MEASURE DIFFERENT MODELS:")
+    print("   - Run this script with different models")
+    print("   - Use the SAME seed and num_samples for fair comparison")
+    print()
+    print("3. CALCULATE SCORES:")
+    print("   - After measuring multiple models, run calculate_scores.py")
+    print("   - This will rank your models by energy efficiency")
+    print()
+    print("4. PRODUCTION USE:")
+    print("   - Increase num_samples to 1000+ for accurate measurements")
+    print("   - Run on real hardware (Intel/AMD CPU or NVIDIA GPU)")
+    print("   - Note: Apple Silicon (M1/M2) may show 0 kWh due to limitations")
+    print()
+    print("=" * 70)
+
+    return results
+
+
+# =============================================================================
+# RUN THE EXAMPLE
+# =============================================================================
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\n\n⚠️  Measurement interrupted by user")
+    except Exception as e:
+        print(f"\n\n❌ Error: {e}")
+        import traceback
+        traceback.print_exc()
+        print("\nIf you need help, check the documentation in energy_measurement/README.md")
