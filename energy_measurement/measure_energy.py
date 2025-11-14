@@ -32,6 +32,7 @@ except ImportError:
     SUPPORTED_HARDWARE = {
         "CPU": "CPU-only (no GPU)",
         "T4": "NVIDIA Tesla T4 16GB",
+        "A10": "NVIDIA A10 24GB",
         "V100": "NVIDIA Tesla V100 32GB",
         "A100": "NVIDIA A100 40GB",
         "A100-80GB": "NVIDIA A100 80GB",

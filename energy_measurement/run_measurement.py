@@ -174,7 +174,7 @@ Notes:
     parser.add_argument(
         '--hardware',
         required=True,
-        choices=['CPU', 'T4', 'V100', 'A100', 'A100-80GB', 'H100', 'H100-SXM', 'M1', 'M2'],
+        choices=['CPU', 'T4', 'A10', 'V100', 'A100', 'A100-80GB', 'H100', 'H100-SXM', 'M1', 'M2'],
         help='Hardware type'
     )
     parser.add_argument(

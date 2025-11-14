@@ -204,6 +204,7 @@ python energy_score/test/test_scoring.py
 
 - **CPU**: CPU-only execution
 - **T4**: NVIDIA Tesla T4 16GB
+- **A10**: NVIDIA A10 24GB
 - **V100**: NVIDIA Tesla V100 32GB
 - **A100**: NVIDIA A100 40GB/80GB
 - **H100**: NVIDIA H100 80GB
