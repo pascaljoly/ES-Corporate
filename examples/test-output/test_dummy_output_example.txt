@@ -1,0 +1,31 @@
+🧪 Testing Energy Measurement with Dummy Model
+==================================================
+Created dataset with 100 samples
+Starting dummy model test...
+Warning: Dataset has only 100 samples, using all of them (requested 100)
+Processing 100 samples for model 'dummy-model' on CPU
+Processed 100/100 samples...
+📁 Results saved to: /home/wdev/ml-energy-score/results/test-classification/dummy-model_20251222_112216.json
+✅ Measurement complete!
+   Energy: 0.0000 kWh
+   Duration: 1.1 seconds
+   kWh per 1000 queries: 0.0001
+
+✅ Test completed successfully!
+
+=== Results ===
+Model: dummy-model
+Task: test-classification
+Hardware: CPU
+Samples processed: 100
+Energy consumed: 0.000008 kWh
+Duration: 1.07 seconds
+Per 1000 queries: 0.000085 kWh
+Avg per sample: 10.70 ms
+
+📁 Results saved to: results/test-classification/dummy-model_20251209_154353.json
+✅ JSON output file created successfully
+
+🎉 Dummy model test passed!
+
+✅ All tests passed!
